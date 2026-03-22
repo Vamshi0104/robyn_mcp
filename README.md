@@ -9,7 +9,7 @@
   <a href="https://pypi.org/project/robyn-mcp/"><img src="https://img.shields.io/pypi/v/robyn-mcp.svg" /></a>
   <a href="https://pypi.org/project/robyn-mcp/"><img src="https://img.shields.io/pypi/dm/robyn-mcp.svg" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/your-org/robyn_mcp" /></a>
-  <a href="https://your-user.github.io/robyn_mcp/"><img src="https://img.shields.io/badge/docs-live-blue" /></a>
+  <a href="https://vamshi0104.github.io/robyn_mcp/"><img src="https://img.shields.io/badge/docs-live-blue" /></a>
 </p>
 
 ---
@@ -125,9 +125,7 @@ robyn_mcp/
 ├── src/
 ├── tests/
 ├── examples/
-├── docs/
-├── scripts/
-└── website/
+└── scripts/
 ```
 
 ---
@@ -160,4 +158,4 @@ robyn_mcp/
 
 Adopting MCP shouldn’t require rebuilding your backend.
 
-With **robyn-mcp**, your existing Robyn routes become a fully discoverable, inspectable, and production-ready MCP surface — with minimal effort and maximum leverage.
+With **robyn-mcp**, your existing Robyn routes become a fully discoverable, inspectable, and production-ready MCP surface - with minimal effort and maximum leverage.
