@@ -1,0 +1,9 @@
+{
+  "p50_ms": 2.8,
+  "rps": 950.0,
+  "notes": "sample robyn benchmark",
+  "environment": {
+    "python": "3.12",
+    "platform": "linux"
+  }
+}

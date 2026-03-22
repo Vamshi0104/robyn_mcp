@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+.venv1/
+env/
+ENV/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Test / coverage / cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Jupyter / misc
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Local temp / debug artifacts
+debug_snapshot.json
+validation_out/
+*.tmp
+*.bak
+
+# Archives you should not commit
+*.zip
+
+# Local runtime files
+*.pid
+
+# Node / website local installs
+node_modules/
+
+# JetBrains / VSCode extension build output
+extensions/**/dist/
+extensions/**/out/
+extensions/**/.idea/
+extensions/**/.gradle/
+extensions/**/build/
+
+# MkDocs site output
+site/
+
+# Local test env files
+.env
+.env.*
+
+docs/

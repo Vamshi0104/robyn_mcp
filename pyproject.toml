@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robyn-mcp"
+version = "1.0.0"
+description = "Turn Robyn endpoints into MCP tools, resources, and prompts with auth-aware HTTP transport and production-friendly packaging."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+  {name = "Vamshi Krishna Madhavan"}
+]
+keywords = ["robyn", "mcp", "model-context-protocol", "ai", "python", "tool-calling"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "pydantic>=2.7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2",
+  "pytest>=8.0",
+  "ruff>=0.6",
+  "twine>=6.0",
+  "nox>=2025.5.1",
+  "httpx>=0.27",
+]
+docs = [
+  "mkdocs-material>=9.7.0",
+  "mkdocstrings[python]>=0.25",
+]
+
+
+[project.scripts]
+robyn-mcp = "robyn_mcp.cli:main"
+
+[project.urls]
+Repository = "https://github.com/Vamshi0104/robyn_mcp"
+Issues = "https://github.com/Vamshi0104/robyn_mcp/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

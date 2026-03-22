@@ -1,0 +1,9 @@
+{
+  "p50_ms": 3.4,
+  "rps": 870.0,
+  "notes": "sample fastapi benchmark",
+  "environment": {
+    "python": "3.12",
+    "platform": "linux"
+  }
+}
