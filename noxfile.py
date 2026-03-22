@@ -24,7 +24,7 @@ def lint(session: nox.Session) -> None:
 def compat(session: nox.Session, robyn_version: str) -> None:
     session.install("-e", ".[dev]", f"robyn=={robyn_version}")
     session.run("python", "-m", "robyn_mcp.cli", "runtime", "--json")
-    session.run("pytest", "tests/test_phase10_cli.py", "tests/test_http_dispatch.py")
+    session.run("pytest", "tests/test_phase1_cli.py", "tests/test_http_dispatch.py")
 
 
 @nox.session(python="3.11")
