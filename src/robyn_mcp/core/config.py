@@ -10,7 +10,7 @@ class RobynMCPConfig(BaseModel):
     name: str = "robyn-mcp"
     server_name: str = "robyn-mcp"
     description: str = "Robyn MCP server"
-    version: str = "1.0.0"
+    version: str = "1.0.1"
 
     # Protocol
     protocol_version: str = "2025-11-25"
@@ -38,8 +38,13 @@ class RobynMCPConfig(BaseModel):
     # Core operational features
     enable_metrics: bool = True
     enable_audit_log: bool = True
+    show_banner_on_start: bool = True
     include_server_instructions: bool = False
     instructions: str | None = None
+    enable_response_cache: bool = False
+    response_cache_ttl_seconds: int = 60
+    response_cache_max_entries: int = 1024
+    response_cache_invalidate_all_on_mutation: bool = True
 
     # Filtering
     include_tags: set[str] | None = None
@@ -130,6 +135,10 @@ class RobynMCPConfig(BaseModel):
             raise ValueError("trace_max_result_chars must be > 0")
         if self.metrics_window_size <= 0:
             raise ValueError("metrics_window_size must be > 0")
+        if self.response_cache_ttl_seconds <= 0:
+            raise ValueError("response_cache_ttl_seconds must be > 0")
+        if self.response_cache_max_entries <= 0:
+            raise ValueError("response_cache_max_entries must be > 0")
         if self.auto_expose_tag_allowlist and self.auto_expose_tag_denylist:
             raise ValueError("auto_expose_tag_allowlist and auto_expose_tag_denylist cannot be used together")
         if self.auto_expose_operation_allowlist and self.auto_expose_operation_denylist:

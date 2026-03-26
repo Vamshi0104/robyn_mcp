@@ -26,7 +26,7 @@ def build_announcement_bundle(project_root: str | Path, out_dir: str | Path) -> 
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    version = '1.0.0'
+    version = '1.0.1'
     markdown = out / 'announcement.md'
     markdown.write_text(
         f"# robyn_mcp {version}\n\n"
@@ -43,7 +43,7 @@ def build_announcement_bundle(project_root: str | Path, out_dir: str | Path) -> 
     social.write_text(
         "<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' viewBox='0 0 1200 630'>"
         "<rect width='1200' height='630' fill='#0b1020'/>"
-        "<text x='80' y='180' fill='#e2e8f0' font-size='58' font-family='Arial'>robyn_mcp 1.0.0</text>"
+        "<text x='80' y='180' fill='#e2e8f0' font-size='58' font-family='Arial'>robyn_mcp 1.0.1</text>"
         "<text x='80' y='260' fill='#93c5fd' font-size='34' font-family='Arial'>Robyn routes to MCP tools, resources, and prompts</text>"
         "<text x='80' y='330' fill='#cbd5e1' font-size='28' font-family='Arial'>Launch-ready docs, validation CLI, website export, and editor integrations</text>"
         "</svg>"

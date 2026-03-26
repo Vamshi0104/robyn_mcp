@@ -8,6 +8,7 @@ from typing import Any
 
 from robyn_mcp.core.compat import build_compatibility_report
 from robyn_mcp.core.config import RobynMCPConfig
+from robyn_mcp.install_notice import build_install_banner
 from robyn_mcp.testing.announcement import build_announcement_bundle
 from robyn_mcp.testing.benchmark_compare import compare_benchmarks
 from robyn_mcp.testing.benchmark_publish import write_benchmark_markdown
@@ -95,6 +96,8 @@ def build_parser() -> argparse.ArgumentParser:
     market = sub.add_parser('marketplace-audit', help='Validate marketplace submission assets for editor extensions')
     market.add_argument('--project-root', default=str(Path(__file__).resolve().parents[2]))
     market.add_argument('--json', action='store_true')
+
+    sub.add_parser('install-note', help='Print install banner and package metadata')
 
     # NEW: trace / playground helpers
     trace = sub.add_parser('trace-endpoint', help='Fetch tool metrics and recent tool trace events from a live MCP endpoint')
@@ -198,6 +201,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == 'marketplace-audit':
         payload = audit_marketplace_assets(args.project_root)
         return _emit(payload, as_json=args.json)
+
+    if args.command == 'install-note':
+        print(build_install_banner())
+        return 0
 
     if args.command == 'trace-endpoint':
         report = EndpointValidator(args.endpoint, timeout=args.timeout).validate()

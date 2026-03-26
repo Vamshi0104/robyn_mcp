@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, Callable
 
 from robyn_mcp.core.compat import build_compatibility_report
 from robyn_mcp.core.config import RobynMCPConfig
@@ -9,6 +9,7 @@ from robyn_mcp.core.describe import build_tool_description
 from robyn_mcp.core.executor import ToolExecutor
 from robyn_mcp.core.filters import FilterEngine
 from robyn_mcp.core.introspect import extract_prompts, extract_resources, extract_routes
+from robyn_mcp.core.response_cache import ToolResponseCache, normalize_tag
 from robyn_mcp.core.models import PromptDefinition, ResourceDefinition, ToolDefinition
 from robyn_mcp.core.naming import slugify_operation, unique_name
 from robyn_mcp.observability.metrics import MetricsCollector
@@ -18,6 +19,7 @@ from robyn_mcp.security.auth import HeaderPrincipalResolver, PrincipalResolver
 from robyn_mcp.security.policy import PolicyEngine, RequestContext
 from robyn_mcp.transport.http import MCPDispatcher, MCPTransportError
 from robyn_mcp.transport.protocol import INTERNAL_ERROR, jsonrpc_error, INVALID_REQUEST
+from robyn_mcp.install_notice import build_install_banner
 
 PARSE_ERROR = -32700
 
@@ -40,6 +42,11 @@ class RobynMCP:
         self.policy = policy or PolicyEngine(config=self.config)
         self.principal_resolver = principal_resolver or HeaderPrincipalResolver()
         self.executor = ToolExecutor(self.policy, metrics=self.metrics)
+        self.response_cache = ToolResponseCache(
+            enabled=self.config.enable_response_cache,
+            default_ttl_seconds=self.config.response_cache_ttl_seconds,
+            max_entries=self.config.response_cache_max_entries,
+        )
         self._tools = self._build_tools()
         self._tool_map = {tool.name: tool for tool in self._tools}
         self._resources = self._build_resources()
@@ -48,6 +55,38 @@ class RobynMCP:
         self._prompt_map = {prompt.name: prompt for prompt in self._prompts}
         self.dispatcher = MCPDispatcher(self, self.config)
         self._mounted = False
+        self._banner_printed = False
+        if not self._attach_start_banner():
+            # Fallback for app objects that do not expose a writable `start` attribute.
+            self._print_banner_once()
+
+    def _print_banner_once(self) -> None:
+        if not self.config.show_banner_on_start or self._banner_printed:
+            return
+        print(build_install_banner())
+        self._banner_printed = True
+
+    def _attach_start_banner(self) -> bool:
+        start = getattr(self.app, "start", None)
+        if not callable(start):
+            return False
+        if getattr(start, "__robyn_mcp_banner_wrapped__", False):
+            return True
+
+        start_callable: Callable[..., Any] = start
+
+        def _wrapped_start(*args: Any, **kwargs: Any) -> Any:
+            self._print_banner_once()
+            return start_callable(*args, **kwargs)
+
+        setattr(_wrapped_start, "__robyn_mcp_banner_wrapped__", True)
+
+        try:
+            setattr(self.app, "start", _wrapped_start)
+        except Exception:
+            # Some app objects may not allow runtime attribute assignment.
+            return False
+        return True
 
     def _redact_result(self, value: Any) -> Any:
         fields = set(getattr(self.config, "redact_response_fields", set()) or set())
@@ -67,6 +106,46 @@ class RobynMCP:
             return [self._redact_result(item) for item in value]
 
         return value
+
+    @staticmethod
+    def _normalize_tag_values(values: list[str] | None) -> list[str]:
+        if not values:
+            return []
+        seen: set[str] = set()
+        normalized: list[str] = []
+        for value in values:
+            token = normalize_tag(value)
+            if not token or token in seen:
+                continue
+            seen.add(token)
+            normalized.append(token)
+        return normalized
+
+    def _read_cache_tags_for_tool(self, tool: ToolDefinition) -> list[str]:
+        tags: list[str] = []
+        tags.extend(self._normalize_tag_values(tool.metadata.cache_tags))
+        tags.extend(self._normalize_tag_values([f"tool:{tool.name}"]))
+        tags.extend(self._normalize_tag_values([f"route:{tool.metadata.path}"]))
+        tags.extend(self._normalize_tag_values([f"tag:{tag}" for tag in (tool.metadata.tags or [])]))
+        return self._normalize_tag_values(tags)
+
+    def _invalidation_tags_for_tool(self, tool: ToolDefinition) -> list[str]:
+        tags: list[str] = []
+        tags.extend(self._normalize_tag_values(tool.metadata.invalidate_tags))
+        tags.extend(self._normalize_tag_values([f"tag:{tag}" for tag in (tool.metadata.tags or [])]))
+        return self._normalize_tag_values(tags)
+
+    def _tool_cache_ttl(self, tool: ToolDefinition) -> int:
+        if tool.metadata.cache_ttl_seconds is not None:
+            return tool.metadata.cache_ttl_seconds
+        return self.config.response_cache_ttl_seconds
+
+    def _should_cache_tool(self, tool: ToolDefinition) -> bool:
+        return (
+            self.config.enable_response_cache
+            and not tool.metadata.side_effect
+            and self._tool_cache_ttl(tool) > 0
+        )
 
     def _build_tools(self) -> list[ToolDefinition]:
         filter_engine = FilterEngine(self.config)
@@ -95,6 +174,30 @@ class RobynMCP:
                 annotations["source"] = route_source
             if route_auto_generated:
                 annotations["autoGenerated"] = True
+
+            route_cache_ttl = (
+                route.cache_ttl_seconds
+                if route.cache_ttl_seconds is not None
+                else self.config.response_cache_ttl_seconds
+            )
+            if self.config.enable_response_cache and not route.side_effect and route_cache_ttl > 0:
+                annotations["cacheEnabled"] = True
+                annotations["cacheTtlSeconds"] = route_cache_ttl
+                tags = self._normalize_tag_values(
+                    list(route.cache_tags)
+                    + [f"tool:{tool_name}", f"route:{route.path}"]
+                    + [f"tag:{tag}" for tag in (route.tags or [])]
+                )
+                if tags:
+                    annotations["cacheTags"] = tags
+            elif route.side_effect and self.config.enable_response_cache:
+                invalidate_tags = self._normalize_tag_values(
+                    list(route.invalidate_tags) + [f"tag:{tag}" for tag in (route.tags or [])]
+                )
+                if invalidate_tags:
+                    annotations["invalidateTags"] = invalidate_tags
+                elif self.config.response_cache_invalidate_all_on_mutation:
+                    annotations["invalidateAllCache"] = True
 
             tool = ToolDefinition(
                 name=tool_name,
@@ -142,6 +245,7 @@ class RobynMCP:
             report["features"]["playground"] = getattr(self.config, "enable_playground", False)
             report["features"]["openapi_autogen"] = getattr(self.config, "auto_expose_openapi", False)
             report["features"]["tool_tracing"] = getattr(self.config, "enable_tool_tracing", False)
+            report["features"]["response_cache"] = getattr(self.config, "enable_response_cache", False)
 
         return report
 
@@ -292,13 +396,46 @@ class RobynMCP:
                     break
         if tool is None:
             raise KeyError(f"Unknown tool: {name}")
+
+        cache_key = None
+        if self._should_cache_tool(tool):
+            cache_key = self.response_cache.build_key(
+                tool_name=tool.name,
+                arguments=arguments,
+                tenant_id=context.tenant_id,
+                principal_id=context.principal_id,
+                client_id=context.client_id,
+                session_id=context.session_id,
+                scopes=context.scopes,
+            )
+            cached = self.response_cache.get(cache_key)
+            if cached is not None:
+                return self._redact_result(cached)
+
         result = await self.executor.execute(
             tool_name=name,
             handler=tool.metadata.handler,
             arguments=arguments,
             context=context,
         )
-        return self._redact_result(result)
+        redacted_result = self._redact_result(result)
+
+        if cache_key is not None:
+            self.response_cache.set(
+                cache_key,
+                redacted_result,
+                tags=self._read_cache_tags_for_tool(tool),
+                ttl_seconds=self._tool_cache_ttl(tool),
+            )
+
+        if self.config.enable_response_cache and tool.metadata.side_effect:
+            invalidate_tags = self._invalidation_tags_for_tool(tool)
+            if invalidate_tags:
+                self.response_cache.invalidate_tags(invalidate_tags)
+            elif self.config.response_cache_invalidate_all_on_mutation:
+                self.response_cache.clear()
+
+        return redacted_result
 
     async def read_resource(self, uri: str, context: RequestContext | None = None) -> Any:
         context = context or RequestContext()

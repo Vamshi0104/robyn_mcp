@@ -8,7 +8,7 @@
 <p align="center">
   <a href="https://pypi.org/project/robyn-mcp/"><img src="https://img.shields.io/pypi/v/robyn-mcp.svg" /></a>
   <a href="https://pypi.org/project/robyn-mcp/"><img src="https://img.shields.io/pypi/dm/robyn-mcp.svg" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/your-org/robyn_mcp" /></a>
+  <a href="https://github.com/Vamshi0104/robyn_mcp/blob/main/LICENSE"><img src="https://img.shields.io/github/license/your-org/robyn_mcp" /></a>
   <a href="https://vamshi0104.github.io/robyn_mcp/"><img src="https://img.shields.io/badge/docs-live-blue" /></a>
 </p>
 
@@ -36,6 +36,7 @@ You shouldn’t need to rebuild it to support MCP.
 - 🔗 OpenAPI enrichment + `$ref` resolution  
 - 🔐 Auth-aware context + header forwarding  
 - 📊 Observability (metrics, traces, audit logs)  
+- 🗂️ Response caching with tag invalidation  
 - 🧪 CLI for validation + debugging  
 - 🖥️ Built-in Playground UI  
 - 📦 Production-ready packaging  
@@ -45,7 +46,18 @@ You shouldn’t need to rebuild it to support MCP.
 ## 📦 Installation
 
 ```bash
+python -m pip install --upgrade pip
 pip install robyn robyn-mcp
+python -m robyn_mcp.cli install-note
+```
+
+`pip install robyn-mcp` (wheel install) does not execute package post-install Python hooks, so the explicit
+`install-note` step is the reliable way to show the banner right after installation.
+
+If you want automatic banner output + installed package summary in one command:
+
+```bash
+python scripts/install_with_banner.py --wheel dist/robyn_mcp-1.0.1-py3-none-any.whl
 ```
 
 ---
@@ -66,8 +78,57 @@ def health():
 mcp = RobynMCP(app, config=RobynMCPConfig(require_session=False))
 mcp.mount_http("/mcp")
 
+# Prints the ROBYN-MCP banner once, then starts Robyn.
 app.start(port=8080)
 ```
+
+---
+
+## 🗂️ Response Caching With Invalidation Tags
+
+```python
+from robyn_mcp import RobynMCPConfig, expose_tool
+
+@expose_tool(operation_id="list_products", side_effect=False, cache_tags=["products"])
+def list_products():
+    return {"items": [...]}
+
+@expose_tool(operation_id="create_product", side_effect=True, invalidate_tags=["products"])
+def create_product(id: str, name: str, price: int):
+    ...
+
+config = RobynMCPConfig(
+    require_session=False,
+    enable_response_cache=True,
+    response_cache_ttl_seconds=120,
+)
+```
+
+Cache behavior:
+- Read tools can be cached with TTL.
+- Mutation tools can invalidate matching cache tags.
+- If no invalidation tags are provided on a mutation, cache is safely cleared by default.
+
+Curl flow:
+
+```bash
+# 1) Read (cached after first call)
+curl -X POST http://localhost:8080/mcp \
+  -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_products","arguments":{}}}'
+
+# 2) Mutation (invalidates products cache tag)
+curl -X POST http://localhost:8080/mcp \
+  -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"create_product","arguments":{"id":"sku-2","name":"sock","price":15}}}'
+
+# 3) Read again (fresh result after invalidation)
+curl -X POST http://localhost:8080/mcp \
+  -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"list_products","arguments":{}}}'
+```
+
+See complete runnable example: `examples/cache_invalidation_example.py`.
 
 ---
 
@@ -149,6 +210,7 @@ robyn_mcp/
 - Session lifecycle support with TTL
 - Request context, principal, tenant, and header forwarding hooks
 - Per-tool policy hooks and built-in token-bucket rate limiting
+- Response caching for read tools with tag-based invalidation on mutations
 - Metrics and recent audit event capture
 - Docs, CI, release workflow, smoke tests, and benchmark scaffolding
 

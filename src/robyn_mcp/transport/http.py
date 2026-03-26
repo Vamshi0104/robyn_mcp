@@ -295,6 +295,9 @@ class MCPDispatcher:
         if self.config.enable_audit_log:
             payload["recentAuditEvents"] = self.server.recent_audit_events(limit=20)
 
+        if self.config.enable_response_cache and hasattr(self.server, "response_cache"):
+            payload["responseCache"] = self.server.response_cache.snapshot()
+
         return payload
 
     def build_initialize_result(self) -> dict[str, Any]:
@@ -440,6 +443,8 @@ class MCPDispatcher:
                     result_payload["toolMetrics"] = tool_metrics_fn()
                 if callable(recent_tool_events_fn):
                     result_payload["recentToolEvents"] = recent_tool_events_fn(limit=50)
+            if self.config.enable_response_cache and hasattr(self.server, "response_cache"):
+                result_payload["responseCache"] = self.server.response_cache.snapshot()
 
             return 200, {"content-type": "application/json"}, jsonrpc_result(
                 request_id,

@@ -39,6 +39,7 @@ def build_compatibility_report(config: RobynMCPConfig) -> dict[str, Any]:
             "rate_limiting": config.rate_limit_enabled,
             "audit_log": config.enable_audit_log,
             "metrics": config.enable_metrics,
+            "response_cache": config.enable_response_cache,
             "response_redaction": bool(config.redact_response_fields),
             "openapi_ref_resolution": config.resolve_openapi_refs,
             "header_parameter_schema": config.include_header_parameters_in_schema,

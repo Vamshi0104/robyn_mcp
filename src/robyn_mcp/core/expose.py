@@ -24,6 +24,9 @@ def expose_tool(
     auth_scopes: list[str] | None = None,
     required_permissions: list[str] | None = None,
     examples: list[dict[str, Any]] | None = None,
+    cache_ttl_seconds: int | None = None,
+    cache_tags: list[str] | None = None,
+    invalidate_tags: list[str] | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         setattr(
@@ -42,6 +45,9 @@ def expose_tool(
                 "auth_scopes": auth_scopes or [],
                 "required_permissions": required_permissions or [],
                 "examples": examples or [],
+                "cache_ttl_seconds": cache_ttl_seconds,
+                "cache_tags": cache_tags or [],
+                "invalidate_tags": invalidate_tags or [],
             },
         )
         return func

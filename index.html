@@ -269,7 +269,7 @@
                 <a href="#install">Install</a>
                 <a href="#faq">FAQ</a>
             </div>
-            <a class="nav-cta" href="#install">Download v1</a>
+            <a class="nav-cta" href="#install">Download v1.0.1</a>
         </nav>
     </div>
 </div>
@@ -278,7 +278,7 @@
     <section class="hero">
         <div class="container hero-grid">
             <div>
-                <div class="eyebrow">Fast • Modern • MCP-ready</div>
+                <div class="eyebrow">Fast • Modern • MCP-ready • v1.0.1</div>
                 <h1>Turn your Robyn APIs into beautiful, production-ready MCP servers.</h1>
                 <p>
                     robyn-mcp helps developers expose tools, resources, and prompts from Robyn apps with minimal code.
@@ -359,6 +359,11 @@ app.start(port=8080)</code></pre>
                     <p>Track calls, errors, average latency, and recent events to understand real usage and debug issues
                         faster during local and production testing.</p></article>
                 <article class="card">
+                    <div class="icon">🗂️</div>
+                    <h3>Response cache with tag invalidation</h3>
+                    <p>Cache frequent read tools to reduce backend load, then invalidate by cache tags from mutation
+                        tools so clients always see fresh data after updates.</p></article>
+                <article class="card">
                     <div class="icon">🧪</div>
                     <h3>CLI and validation flow</h3>
                     <p>Inspect, validate, benchmark, and audit your endpoint with built-in tooling designed to make
@@ -409,7 +414,8 @@ app.start(port=8080)</code></pre>
                 <div class="code-window">
                     <div class="window-top"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
                     </div>
-                    <pre><code>curl -s http://localhost:8080/mcp \
+                    <button class="copy-btn" onclick="copyCurlSetup(this)">Copy</button>
+                    <pre><code id="copyCurlSetup">curl -s http://localhost:8080/mcp \
   -H 'content-type: application/json' \
   -H 'accept: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
@@ -454,13 +460,15 @@ curl -s http://localhost:8080/mcp \
     <section id="install">
         <div class="container download">
             <div class="price-card">
-                <div class="price-badge">Download v1</div>
+                <div class="price-badge">Download v1.0.1</div>
                 <h3>Install robyn-mcp and launch in minutes</h3>
                 <p>Perfect for developers who already have a Robyn application and want MCP support, discovery,
                     observability, and a polished playground with minimal setup.</p>
                 <div class="install-box">
                     <button class="copy-btn" onclick="copyCodePip(this)">Copy</button>
-                    <pre><code id="copyCodePip">pip install robyn robyn-mcp</code></pre>
+                    <pre><code id="copyCodePip">python -m pip install --upgrade pip
+pip install robyn robyn-mcp
+robyn-mcp install-note</code></pre>
                 </div>
                 <div class="hero-actions" style="margin-top:18px;">
                     <a class="btn btn-primary" href="#quickstart">Quickstart</a>
@@ -511,15 +519,18 @@ app.start(port=8080)</code></pre>
 </main>
 
 <footer>
-    <div class="container footer-card">
-        <div>
-            <strong style="display:block; margin-bottom:8px; color:var(--text);">robyn-mcp</strong>
-            <span>Modern MCP enablement for Robyn applications.</span>
-        </div>
-        <div style="display:flex; gap:12px; flex-wrap:wrap;">
-            <a class="pill" href="#features">Features</a>
-            <a class="pill" href="#install">Install</a>
-            <a class="pill" href="#faq">FAQ</a>
+        <div class="container footer-card">
+            <div>
+                <strong style="display:block; margin-bottom:8px; color:var(--text);">robyn-mcp</strong>
+                <span>Modern MCP enablement for Robyn applications.</span>
+                <small style="display:block; margin-top:8px; color:var(--muted);">
+                    Author: Vamshi Krishna Madhavan | Created: Mar 22, 2026
+                </small>
+            </div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <a class="pill" href="#features">Features</a>
+                <a class="pill" href="#install">Install</a>
+                <a class="pill" href="#faq">FAQ</a>
         </div>
     </div>
 </footer>
@@ -546,6 +557,16 @@ app.start(port=8080)</code></pre>
     }
     function copyCodeSetup(button) {
       const code = document.getElementById("copyCodeSetup").innerText;
+
+      navigator.clipboard.writeText(code).then(() => {
+        button.innerText = "Copied ✓";
+        setTimeout(() => {
+          button.innerText = "Copy";
+        }, 2000);
+      });
+    }
+    function copyCurlSetup(button) {
+      const code = document.getElementById("copyCurlSetup").innerText;
 
       navigator.clipboard.writeText(code).then(() => {
         button.innerText = "Copied ✓";

@@ -463,7 +463,7 @@ run_metadata_checks() {
   record_ok "metadata_environment"
 
   {
-    grep -RIn "__version__\|0.1.0a6\|1.0.0" "${ROOT_DIR}/src" "${ROOT_DIR}/pyproject.toml" || true
+    grep -RIn "__version__\|0.1.0a6\|1.0.1" "${ROOT_DIR}/src" "${ROOT_DIR}/pyproject.toml" || true
   } >"${OUT_DIR}/version_grep.txt" 2>&1
   record_ok "metadata_version_grep"
 }

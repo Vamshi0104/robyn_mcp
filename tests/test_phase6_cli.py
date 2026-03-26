@@ -70,4 +70,4 @@ def test_release_audit_reflects_phase16_assets():
     payload = json.loads(result.stdout)
     assert payload['ok'] is True
     assert payload['websiteReady'] is True
-    assert payload['version'] == '1.0.0'
+    assert payload['version'] == '1.0.1'

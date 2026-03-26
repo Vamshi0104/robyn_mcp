@@ -20,7 +20,7 @@ def test_release_audit_function():
     root = Path(__file__).resolve().parents[1]
     payload = audit_release_bundle(root)
     assert payload["ok"] is True
-    assert payload["version"] == "1.0.0"
+    assert payload["version"] == "1.0.1"
     assert payload["versionConsistent"] is True
     assert payload["missingPaths"] == []
 
@@ -36,7 +36,7 @@ def test_release_audit_cli_json():
     )
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
-    assert payload["version"] == "1.0.0"
+    assert payload["version"] == "1.0.1"
 
 
 def test_release_bundle_points_to_final_docs():

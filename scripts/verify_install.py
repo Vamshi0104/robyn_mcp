@@ -24,5 +24,6 @@ if __name__ == "__main__":
         run([sys.executable, "-m", "venv", td])
         run([str(py), "-m", "pip", "install", "--upgrade", "pip"])
         run([str(py), "-m", "pip", "install", str(wheel)])
+        run([str(py), "-m", "robyn_mcp.cli", "install-note"])
         run([str(py), "-c", "import robyn_mcp; print(robyn_mcp.__all__)"])
     print("Install verification passed")

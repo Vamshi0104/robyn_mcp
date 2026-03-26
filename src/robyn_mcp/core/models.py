@@ -23,6 +23,9 @@ class RouteMetadata:
     request_body_schema: dict[str, Any] | None = None
     response_schema: dict[str, Any] | None = None
     examples: list[dict[str, Any]] = field(default_factory=list)
+    cache_ttl_seconds: int | None = None
+    cache_tags: list[str] = field(default_factory=list)
+    invalidate_tags: list[str] = field(default_factory=list)
 
     auto_generated: bool = False
     source: str = "decorator"

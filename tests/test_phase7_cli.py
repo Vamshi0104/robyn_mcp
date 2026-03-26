@@ -23,7 +23,7 @@ def test_build_announcement_bundle(tmp_path):
     assert bundle.markdown_path.exists()
     assert bundle.social_card_path.exists()
     summary = json.loads(bundle.summary_path.read_text())
-    assert summary['version'] == '1.0.0'
+    assert summary['version'] == '1.0.1'
 
 
 def test_build_announcement_cli_json(tmp_path):
@@ -51,4 +51,4 @@ def test_release_audit_reflects_phase17_assets():
     payload = json.loads(result.stdout)
     assert payload['ok'] is True
     assert payload['marketplaceReady'] is True
-    assert payload['version'] == '1.0.0'
+    assert payload['version'] == '1.0.1'
