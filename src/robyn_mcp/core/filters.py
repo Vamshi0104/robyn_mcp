@@ -11,7 +11,10 @@ class FilterEngine:
     def allow(self, meta: RouteMetadata) -> bool:
         if not meta.exposed:
             return False
-        if self.config.include_operations and meta.operation_id not in self.config.include_operations:
+        if (
+            self.config.include_operations
+            and meta.operation_id not in self.config.include_operations
+        ):
             return False
         if self.config.exclude_operations and meta.operation_id in self.config.exclude_operations:
             return False

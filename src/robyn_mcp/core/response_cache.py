@@ -91,7 +91,9 @@ class ToolResponseCache:
             "session_id": session_id,
             "scopes": sorted(str(scope) for scope in (scopes or [])),
         }
-        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
+        encoded = json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str
+        )
         return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
     def get(self, key: str) -> Any | None:

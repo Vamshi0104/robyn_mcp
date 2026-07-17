@@ -1,0 +1,48 @@
+name: Bug report
+description: Report an install, runtime, protocol, or adapter bug.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. The fastest reports include runtime and endpoint diagnostics.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the behavior and what you expected instead.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: robyn-mcp version
+      placeholder: "1.0.2"
+    validations:
+      required: true
+  - type: textarea
+    id: runtime
+    attributes:
+      label: Runtime output
+      description: Paste `robyn-mcp runtime --json`.
+      render: json
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Endpoint doctor output
+      description: Paste `robyn-mcp doctor <endpoint> --json` if an endpoint is involved.
+      render: json
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Include the smallest app or OpenAPI snippet that reproduces the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or traceback
+      render: text
+

@@ -4,19 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robyn-mcp"
-version = "1.0.1"
-description = "Turn Robyn endpoints into MCP tools, resources, and prompts with auth-aware HTTP transport and production-friendly packaging."
+version = "1.0.2"
+description = "Turn Robyn endpoints into governed MCP tools, resources, and prompts with risk metadata, auth-aware HTTP transport, and production-friendly packaging."
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 authors = [
   {name = "Vamshi Krishna Madhavan"}
 ]
-keywords = ["robyn", "mcp", "model-context-protocol", "ai", "python", "tool-calling"]
+keywords = ["robyn", "mcp", "model-context-protocol", "ai", "python", "tool-calling", "api-gateway", "ai-agents", "openapi", "security", "observability"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -49,6 +48,7 @@ robyn-mcp = "robyn_mcp.cli:main"
 [project.urls]
 Repository = "https://github.com/Vamshi0104/robyn_mcp"
 Issues = "https://github.com/Vamshi0104/robyn_mcp/issues"
+Documentation = "https://vamshi0104.github.io/robyn_mcp/"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

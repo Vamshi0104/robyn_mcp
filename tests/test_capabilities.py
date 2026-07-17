@@ -53,7 +53,14 @@ def service_config():
 
 @expose_prompt(name="draft-rollout")
 def draft_rollout(service: str, audience: str = "internal"):
-    return {"messages": [{"role": "user", "content": [{"type": "text", "text": f"Roll out {service} for {audience}"}]}]}
+    return {
+        "messages": [
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": f"Roll out {service} for {audience}"}],
+            }
+        ]
+    }
 
 
 def make_server():
@@ -92,7 +99,14 @@ def test_resources_list_and_read():
     assert status == 200
     assert body["result"]["resources"][0]["uri"] == "config://service/current"
 
-    read_request = DummyRequest({"jsonrpc": "2.0", "id": 2, "method": "resources/read", "params": {"uri": "config://service/current"}})
+    read_request = DummyRequest(
+        {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "resources/read",
+            "params": {"uri": "config://service/current"},
+        }
+    )
     status, _, body = __import__("asyncio").run(dispatcher.handle_post(read_request))
     assert status == 200
     assert "robyn-mcp" in body["result"]["contents"][0]["text"]
@@ -107,7 +121,12 @@ def test_prompts_list_and_get():
     assert body["result"]["prompts"][0]["name"] == "draft-rollout"
 
     get_request = DummyRequest(
-        {"jsonrpc": "2.0", "id": 2, "method": "prompts/get", "params": {"name": "draft-rollout", "arguments": {"service": "billing"}}}
+        {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "prompts/get",
+            "params": {"name": "draft-rollout", "arguments": {"service": "billing"}},
+        }
     )
     status, _, body = __import__("asyncio").run(dispatcher.handle_post(get_request))
     assert status == 200

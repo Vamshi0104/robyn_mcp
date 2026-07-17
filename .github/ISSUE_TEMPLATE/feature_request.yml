@@ -1,0 +1,35 @@
+name: Feature request
+description: Request an adapter, CLI command, transport, or protocol improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API, CLI, docs, or behavior you would like.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Robyn adapter
+        - OpenAPI
+        - FastAPI
+        - Client compatibility
+        - Security/governance
+        - Docs/examples
+        - Packaging/release
+        - Other
+    validations:
+      required: true
+

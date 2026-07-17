@@ -64,7 +64,10 @@ def test_explicit_expose_tool_still_works_with_openapi_autogen():
     assert "list_products" in tool_names
 
     health_tool = next(tool for tool in tools if tool["name"] == "health")
-    assert "Return service health" in health_tool.get("description", "") or health_tool.get("title") == "Return service health"
+    assert (
+        "Return service health" in health_tool.get("description", "")
+        or health_tool.get("title") == "Return service health"
+    )
 
 
 def test_openapi_autogen_allowlist_filters_tools():

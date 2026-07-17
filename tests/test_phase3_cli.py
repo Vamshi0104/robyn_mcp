@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from robyn_mcp.cli import main
 from robyn_mcp.testing.benchmark_compare import compare_benchmarks
@@ -23,7 +22,8 @@ def test_release_bundle(capsys):
     rc = main(["release-bundle", "--json"])
     assert rc == 0
     out = json.loads(capsys.readouterr().out)
-    assert out["releaseNotes"].endswith(("release_notes_v0_13_0.md", "release_notes_v0_14_0_rc1.md", "release_notes_v0_14_0.md", "release_notes_v0_16_0.md"))
+    assert out["releaseGuide"].endswith("release.md")
+    assert out["openapi"].endswith("openapi_gateway.md")
 
 
 def test_compare_benchmarks_helper(tmp_path):

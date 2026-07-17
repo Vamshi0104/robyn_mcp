@@ -6,7 +6,12 @@ from typing import Any
 
 from robyn_mcp.core.config import RobynMCPConfig
 from robyn_mcp.core.expose import ROB_MCP_META, ROB_MCP_PROMPT_META, ROB_MCP_RESOURCE_META
-from robyn_mcp.core.models import PromptArgument, PromptDefinition, ResourceDefinition, RouteMetadata
+from robyn_mcp.core.models import (
+    PromptArgument,
+    PromptDefinition,
+    ResourceDefinition,
+    RouteMetadata,
+)
 from robyn_mcp.schemas.json_schema import signature_to_input_schema
 
 _HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
@@ -61,7 +66,9 @@ def _get_openapi_schema(app: Any) -> dict[str, Any]:
     return {}
 
 
-def _build_openapi_index(app: Any, config: RobynMCPConfig) -> tuple[dict[tuple[str, str], dict[str, Any]], dict[str, Any]]:
+def _build_openapi_index(
+    app: Any, config: RobynMCPConfig
+) -> tuple[dict[tuple[str, str], dict[str, Any]], dict[str, Any]]:
     schema = _get_openapi_schema(app)
     if not schema:
         return {}, {}
@@ -79,7 +86,9 @@ def _build_openapi_index(app: Any, config: RobynMCPConfig) -> tuple[dict[tuple[s
             method_l = str(method).lower()
             if method_l not in _HTTP_METHODS:
                 continue
-            index[(str(path), method_l)] = _resolve_ref(spec, components) if config.resolve_openapi_refs else spec
+            index[(str(path), method_l)] = (
+                _resolve_ref(spec, components) if config.resolve_openapi_refs else spec
+            )
 
     return index, components
 
@@ -88,7 +97,9 @@ def _extract_examples(spec: dict[str, Any], config: RobynMCPConfig) -> list[dict
     examples: list[dict[str, Any]] = []
     request_body = spec.get("requestBody") or {}
     content = request_body.get("content") or {}
-    ordered = list(config.prefer_openapi_body_content_types) + [k for k in content if k not in config.prefer_openapi_body_content_types]
+    ordered = list(config.prefer_openapi_body_content_types) + [
+        k for k in content if k not in config.prefer_openapi_body_content_types
+    ]
 
     for content_type in ordered:
         entry = content.get(content_type)
@@ -99,10 +110,14 @@ def _extract_examples(spec: dict[str, Any], config: RobynMCPConfig) -> list[dict
         if isinstance(raw_examples, dict):
             for name, item in raw_examples.items():
                 if isinstance(item, dict) and item.get("value") is not None:
-                    examples.append({"name": str(name), "arguments": item["value"], "contentType": content_type})
+                    examples.append(
+                        {"name": str(name), "arguments": item["value"], "contentType": content_type}
+                    )
 
         if entry.get("example") is not None:
-            examples.append({"name": "default", "arguments": entry["example"], "contentType": content_type})
+            examples.append(
+                {"name": "default", "arguments": entry["example"], "contentType": content_type}
+            )
 
         if examples:
             break
@@ -110,12 +125,16 @@ def _extract_examples(spec: dict[str, Any], config: RobynMCPConfig) -> list[dict
     return examples
 
 
-def _extract_best_response_schema(spec: dict[str, Any], config: RobynMCPConfig) -> dict[str, Any] | None:
+def _extract_best_response_schema(
+    spec: dict[str, Any], config: RobynMCPConfig
+) -> dict[str, Any] | None:
     responses = spec.get("responses") or {}
     for status_code in ("200", "201", "202", "204", "default"):
         response = responses.get(status_code) or {}
         content = response.get("content") or {}
-        ordered = list(config.prefer_openapi_body_content_types) + [k for k in content if k not in config.prefer_openapi_body_content_types]
+        ordered = list(config.prefer_openapi_body_content_types) + [
+            k for k in content if k not in config.prefer_openapi_body_content_types
+        ]
         for content_type in ordered:
             schema = (content.get(content_type) or {}).get("schema")
             if schema is not None:
@@ -139,7 +158,9 @@ def _parameter_to_schema(param: dict[str, Any]) -> tuple[str, dict[str, Any], bo
     return name, schema, bool(param.get("required", False) or location == "path")
 
 
-def _merge_request_schema(spec: dict[str, Any], handler: Any, config: RobynMCPConfig) -> dict[str, Any]:
+def _merge_request_schema(
+    spec: dict[str, Any], handler: Any, config: RobynMCPConfig
+) -> dict[str, Any]:
     signature_schema = signature_to_input_schema(handler)
     properties = dict(signature_schema.get("properties", {}))
     required = set(signature_schema.get("required", []))
@@ -151,7 +172,10 @@ def _merge_request_schema(spec: dict[str, Any], handler: Any, config: RobynMCPCo
         if parsed is None:
             continue
         name, schema, is_required = parsed
-        if schema.get("x-mcp-source") == "header" and not config.include_header_parameters_in_schema:
+        if (
+            schema.get("x-mcp-source") == "header"
+            and not config.include_header_parameters_in_schema
+        ):
             continue
         properties[name] = schema
         if is_required:
@@ -159,7 +183,9 @@ def _merge_request_schema(spec: dict[str, Any], handler: Any, config: RobynMCPCo
 
     request_body = spec.get("requestBody") or {}
     content = request_body.get("content") or {}
-    ordered = list(config.prefer_openapi_body_content_types) + [k for k in content if k not in config.prefer_openapi_body_content_types]
+    ordered = list(config.prefer_openapi_body_content_types) + [
+        k for k in content if k not in config.prefer_openapi_body_content_types
+    ]
 
     body_schema = None
     selected_type = None
@@ -186,10 +212,16 @@ def _merge_request_schema(spec: dict[str, Any], handler: Any, config: RobynMCPCo
         if selected_type:
             body_props = body_schema.get("properties", {}) if isinstance(body_schema, dict) else {}
             for key, value in properties.items():
-                if ((isinstance(value, dict) and key in body_props) or key == "body") and isinstance(value, dict):
+                if (
+                    (isinstance(value, dict) and key in body_props) or key == "body"
+                ) and isinstance(value, dict):
                     value.setdefault("x-mcp-content-type", selected_type)
 
-    merged: dict[str, Any] = {"type": "object", "properties": properties, "additionalProperties": False}
+    merged: dict[str, Any] = {
+        "type": "object",
+        "properties": properties,
+        "additionalProperties": False,
+    }
     if required:
         merged["required"] = sorted(required)
     return merged
@@ -233,7 +265,15 @@ def _resolve_handler(route: Any) -> Any | None:
         if value is None:
             continue
 
-        for inner_attr in ("handler", "endpoint", "function", "func", "callable", "f", "py_function"):
+        for inner_attr in (
+            "handler",
+            "endpoint",
+            "function",
+            "func",
+            "callable",
+            "f",
+            "py_function",
+        ):
             inner = getattr(value, inner_attr, None)
             if inner is not None:
                 value = inner
@@ -265,7 +305,9 @@ def _resolve_method(route: Any) -> str:
     return "get"
 
 
-def _should_auto_expose_tool(path: str, method: str, spec: dict[str, Any], config: RobynMCPConfig) -> bool:
+def _should_auto_expose_tool(
+    path: str, method: str, spec: dict[str, Any], config: RobynMCPConfig
+) -> bool:
     if not config.auto_expose_openapi:
         return False
 
@@ -277,9 +319,15 @@ def _should_auto_expose_tool(path: str, method: str, spec: dict[str, Any], confi
     operation_id = str(spec.get("operationId") or "").strip()
     tags = set(spec.get("tags", []) or [])
 
-    if config.auto_expose_operation_allowlist and operation_id not in config.auto_expose_operation_allowlist:
+    if (
+        config.auto_expose_operation_allowlist
+        and operation_id not in config.auto_expose_operation_allowlist
+    ):
         return False
-    if config.auto_expose_operation_denylist and operation_id in config.auto_expose_operation_denylist:
+    if (
+        config.auto_expose_operation_denylist
+        and operation_id in config.auto_expose_operation_denylist
+    ):
         return False
     if config.auto_expose_tag_allowlist and not (tags & config.auto_expose_tag_allowlist):
         return False
@@ -289,7 +337,9 @@ def _should_auto_expose_tool(path: str, method: str, spec: dict[str, Any], confi
     return True
 
 
-def _build_auto_tool_meta(handler: Any, method: str, spec: dict[str, Any], config: RobynMCPConfig) -> dict[str, Any]:
+def _build_auto_tool_meta(
+    handler: Any, method: str, spec: dict[str, Any], config: RobynMCPConfig
+) -> dict[str, Any]:
     operation_id = spec.get("operationId") or getattr(handler, "__name__", "tool")
     summary = spec.get("summary") or operation_id.replace("_", " ").title()
     description = spec.get("description") or config.auto_generated_description_suffix
@@ -311,6 +361,8 @@ def _build_auto_tool_meta(handler: Any, method: str, spec: dict[str, Any], confi
         "cache_ttl_seconds": None,
         "cache_tags": [] if side_effect else list(tags),
         "invalidate_tags": list(tags) if side_effect else [],
+        "risk": None,
+        "approval_required": False,
     }
 
 
@@ -349,23 +401,35 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
                     path=path,
                     method=method,
                     handler=handler,
-                    operation_id=meta.get("operation_id") or spec.get("operationId") or getattr(handler, "__name__", "tool"),
+                    operation_id=meta.get("operation_id")
+                    or spec.get("operationId")
+                    or getattr(handler, "__name__", "tool"),
                     summary=meta.get("summary") or spec.get("summary"),
                     description=meta.get("description") or spec.get("description"),
                     human_summary=meta.get("human_summary"),
                     tags=list(meta.get("tags", spec.get("tags", []))),
-                    requires_auth=bool(meta.get("requires_auth", False) or getattr(route, "auth_required", False) or bool(security)),
-                    side_effect=bool(meta.get("side_effect", method in {"post", "put", "patch", "delete"})),
+                    requires_auth=bool(
+                        meta.get("requires_auth", False)
+                        or getattr(route, "auth_required", False)
+                        or bool(security)
+                    ),
+                    side_effect=bool(
+                        meta.get("side_effect", method in {"post", "put", "patch", "delete"})
+                    ),
                     idempotent=meta.get("idempotent"),
                     exposed=bool(meta.get("exposed", True)),
                     auth_scopes=list(meta.get("auth_scopes", [])) or scopes,
                     required_permissions=list(meta.get("required_permissions", [])),
-                    request_body_schema=_merge_request_schema(spec, handler, config) if spec else signature_to_input_schema(handler),
+                    request_body_schema=_merge_request_schema(spec, handler, config)
+                    if spec
+                    else signature_to_input_schema(handler),
                     response_schema=_extract_best_response_schema(spec, config),
                     examples=list(meta.get("examples", [])) or _extract_examples(spec, config),
                     cache_ttl_seconds=meta.get("cache_ttl_seconds"),
                     cache_tags=list(meta.get("cache_tags", [])),
                     invalidate_tags=list(meta.get("invalidate_tags", [])),
+                    risk=meta.get("risk"),
+                    approval_required=bool(meta.get("approval_required", False)),
                     auto_generated=False,
                     source="decorator",
                     openapi_tags=list(spec.get("tags", [])),
@@ -384,13 +448,22 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
             else:
                 if method == "get" and not config.auto_expose_safe_get_as_tools:
                     continue
-                if method in {"post", "put", "patch", "delete"} and not config.auto_expose_mutations_as_tools:
+                if (
+                    method in {"post", "put", "patch", "delete"}
+                    and not config.auto_expose_mutations_as_tools
+                ):
                     continue
 
                 operation_id = getattr(handler, "__name__", "tool")
-                if config.auto_expose_operation_allowlist and operation_id not in config.auto_expose_operation_allowlist:
+                if (
+                    config.auto_expose_operation_allowlist
+                    and operation_id not in config.auto_expose_operation_allowlist
+                ):
                     continue
-                if config.auto_expose_operation_denylist and operation_id in config.auto_expose_operation_denylist:
+                if (
+                    config.auto_expose_operation_denylist
+                    and operation_id in config.auto_expose_operation_denylist
+                ):
                     continue
 
                 auto_meta = {
@@ -407,7 +480,11 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
                     "examples": [],
                     "cache_ttl_seconds": None,
                     "cache_tags": [] if method in {"post", "put", "patch", "delete"} else [],
-                    "invalidate_tags": [] if method not in {"post", "put", "patch", "delete"} else [],
+                    "invalidate_tags": []
+                    if method not in {"post", "put", "patch", "delete"}
+                    else [],
+                    "risk": None,
+                    "approval_required": False,
                 }
                 request_schema = signature_to_input_schema(handler)
                 response_schema = None
@@ -435,6 +512,8 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
                     cache_ttl_seconds=auto_meta.get("cache_ttl_seconds"),
                     cache_tags=list(auto_meta.get("cache_tags", [])),
                     invalidate_tags=list(auto_meta.get("invalidate_tags", [])),
+                    risk=auto_meta.get("risk"),
+                    approval_required=bool(auto_meta.get("approval_required", False)),
                     auto_generated=True,
                     source="openapi",
                     openapi_tags=tags,
@@ -471,12 +550,18 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
                 exposed=True,
                 auth_scopes=scopes,
                 required_permissions=[],
-                request_body_schema=_merge_request_schema(spec, handler, config) if spec else signature_to_input_schema(handler),
+                request_body_schema=_merge_request_schema(spec, handler, config)
+                if spec
+                else signature_to_input_schema(handler),
                 response_schema=_extract_best_response_schema(spec, config) if spec else None,
                 examples=_extract_examples(spec, config) if spec else [],
                 cache_ttl_seconds=None,
                 cache_tags=list(spec.get("tags", [])) if method == "get" else [],
-                invalidate_tags=list(spec.get("tags", [])) if method in {"post", "put", "patch", "delete"} else [],
+                invalidate_tags=list(spec.get("tags", []))
+                if method in {"post", "put", "patch", "delete"}
+                else [],
+                risk=None,
+                approval_required=False,
                 auto_generated=bool(spec),
                 source="openapi" if spec else "route",
                 openapi_tags=list(spec.get("tags", [])),
@@ -492,7 +577,9 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
         if not operation_id:
             operation_id = f"{method}_{path.strip('/').replace('/', '_') or 'root'}"
 
-        synthetic_handler = (lambda **kwargs: kwargs)
+        def synthetic_handler(**kwargs: Any) -> dict[str, Any]:
+            return kwargs
+
         synthetic_handler.__name__ = operation_id
 
         if config.auto_expose_openapi:
@@ -510,7 +597,9 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
                     human_summary=auto_meta.get("human_summary"),
                     tags=list(auto_meta.get("tags", spec.get("tags", []))),
                     requires_auth=bool(auto_meta.get("requires_auth", False)),
-                    side_effect=bool(auto_meta.get("side_effect", method in {"post", "put", "patch", "delete"})),
+                    side_effect=bool(
+                        auto_meta.get("side_effect", method in {"post", "put", "patch", "delete"})
+                    ),
                     idempotent=auto_meta.get("idempotent"),
                     exposed=True,
                     auth_scopes=list(auto_meta.get("auth_scopes", [])),
@@ -521,6 +610,8 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
                     cache_ttl_seconds=auto_meta.get("cache_ttl_seconds"),
                     cache_tags=list(auto_meta.get("cache_tags", [])),
                     invalidate_tags=list(auto_meta.get("invalidate_tags", [])),
+                    risk=auto_meta.get("risk"),
+                    approval_required=bool(auto_meta.get("approval_required", False)),
                     auto_generated=True,
                     source="openapi",
                     openapi_tags=list(spec.get("tags", [])),
@@ -556,7 +647,11 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
                     examples=_extract_examples(spec, config),
                     cache_ttl_seconds=None,
                     cache_tags=list(spec.get("tags", [])) if method == "get" else [],
-                    invalidate_tags=list(spec.get("tags", [])) if method in {"post", "put", "patch", "delete"} else [],
+                    invalidate_tags=list(spec.get("tags", []))
+                    if method in {"post", "put", "patch", "delete"}
+                    else [],
+                    risk=None,
+                    approval_required=False,
                     auto_generated=True,
                     source="openapi",
                     openapi_tags=list(spec.get("tags", [])),
@@ -564,6 +659,7 @@ def extract_routes(app: Any, config: RobynMCPConfig | None = None) -> list[Route
             )
 
     return output
+
 
 def extract_resources(app: Any, config: RobynMCPConfig | None = None) -> list[ResourceDefinition]:
     config = config or RobynMCPConfig()

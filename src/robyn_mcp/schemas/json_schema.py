@@ -3,8 +3,7 @@ from __future__ import annotations
 import enum
 import inspect
 from dataclasses import MISSING, fields, is_dataclass
-from typing import Any, Literal, TypedDict, get_args, get_origin, get_type_hints
-
+from typing import Any, Literal, get_args, get_origin, get_type_hints
 
 _SIMPLE = {str: "string", int: "integer", float: "number", bool: "boolean"}
 
@@ -13,7 +12,11 @@ def _typed_dict_schema(annotation: Any) -> dict[str, Any]:
     hints = getattr(annotation, "__annotations__", {})
     required_keys = set(getattr(annotation, "__required_keys__", set(hints.keys())))
     properties = {name: annotation_to_schema(hint) for name, hint in hints.items()}
-    schema: dict[str, Any] = {"type": "object", "properties": properties, "additionalProperties": False}
+    schema: dict[str, Any] = {
+        "type": "object",
+        "properties": properties,
+        "additionalProperties": False,
+    }
     if required_keys:
         schema["required"] = sorted(required_keys)
     return schema
@@ -32,7 +35,11 @@ def _object_schema_from_signature(annotation: Any) -> dict[str, Any]:
         properties[name] = annotation_to_schema(param.annotation)
         if param.default is inspect.Signature.empty:
             required.append(name)
-    schema: dict[str, Any] = {"type": "object", "properties": properties, "additionalProperties": False}
+    schema: dict[str, Any] = {
+        "type": "object",
+        "properties": properties,
+        "additionalProperties": False,
+    }
     if required:
         schema["required"] = required
     return schema
@@ -102,7 +109,11 @@ def annotation_to_schema(annotation: Any) -> dict[str, Any]:
             schema["required"] = required
         return schema
 
-    if isinstance(annotation, type) and hasattr(annotation, "__annotations__") and hasattr(annotation, "__required_keys__"):
+    if (
+        isinstance(annotation, type)
+        and hasattr(annotation, "__annotations__")
+        and hasattr(annotation, "__required_keys__")
+    ):
         return _typed_dict_schema(annotation)
 
     if inspect.isclass(annotation) and getattr(annotation, "__annotations__", None):

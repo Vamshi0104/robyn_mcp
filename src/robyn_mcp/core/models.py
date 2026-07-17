@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 
 @dataclass(slots=True)
@@ -26,6 +27,8 @@ class RouteMetadata:
     cache_ttl_seconds: int | None = None
     cache_tags: list[str] = field(default_factory=list)
     invalidate_tags: list[str] = field(default_factory=list)
+    risk: str | None = None
+    approval_required: bool = False
 
     auto_generated: bool = False
     source: str = "decorator"

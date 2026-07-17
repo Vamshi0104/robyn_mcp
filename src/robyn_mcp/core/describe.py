@@ -1,9 +1,14 @@
-
 from __future__ import annotations
 
 from robyn_mcp.core.models import RouteMetadata
 
-_INJECTION_MARKERS = ("ignore previous instructions", "system prompt", "jailbreak", "<tool>", "</tool>")
+_INJECTION_MARKERS = (
+    "ignore previous instructions",
+    "system prompt",
+    "jailbreak",
+    "<tool>",
+    "</tool>",
+)
 
 
 def _sanitize_human_text(value: str) -> str:
@@ -18,7 +23,12 @@ def _sanitize_human_text(value: str) -> str:
 
 def build_tool_description(meta: RouteMetadata) -> str:
     parts: list[str] = []
-    primary = meta.human_summary or meta.summary or meta.description or f"Call {meta.method.upper()} {meta.path}."
+    primary = (
+        meta.human_summary
+        or meta.summary
+        or meta.description
+        or f"Call {meta.method.upper()} {meta.path}."
+    )
     parts.append(_sanitize_human_text(primary))
 
     operation_kind = "read" if not meta.side_effect else "action"

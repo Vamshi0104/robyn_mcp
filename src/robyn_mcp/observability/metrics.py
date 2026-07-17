@@ -27,11 +27,19 @@ class MetricsCollector:
     def counter(self, name: str) -> int:
         return int(self._counters.get(name, 0))
 
-    def record_error(self, tool_name: str, duration_ms: float, context: Any | None = None, error_message: str | None = None) -> None:
+    def record_error(
+        self,
+        tool_name: str,
+        duration_ms: float,
+        context: Any | None = None,
+        error_message: str | None = None,
+    ) -> None:
         self.record_failure(tool_name, duration_ms, context, error_message)
 
     # older success/failure API used by existing tests
-    def record_success(self, tool_name: str, duration_ms: float, context: Any | None = None) -> None:
+    def record_success(
+        self, tool_name: str, duration_ms: float, context: Any | None = None
+    ) -> None:
         self.record_tool_call(
             tool_name=tool_name,
             status="ok",
@@ -41,7 +49,13 @@ class MetricsCollector:
             principal_id=getattr(context, "principal_id", None),
         )
 
-    def record_failure(self, tool_name: str, duration_ms: float, context: Any | None = None, error_message: str | None = None) -> None:
+    def record_failure(
+        self,
+        tool_name: str,
+        duration_ms: float,
+        context: Any | None = None,
+        error_message: str | None = None,
+    ) -> None:
         self.record_tool_call(
             tool_name=tool_name,
             status="error",
@@ -141,8 +155,7 @@ class MetricsCollector:
                 "calls": int(count),
                 "errors": int(self._tool_errors.get(name, 0)),
                 "avgLatencyMs": (
-                    float(self._tool_latency_ms.get(name, 0.0)) / count
-                    if count else 0.0
+                    float(self._tool_latency_ms.get(name, 0.0)) / count if count else 0.0
                 ),
             }
 

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">robyn-mcp demo terminal</title>
+  <desc id="desc">A terminal-style preview showing doctor, OpenAPI inspection, and gateway invocation commands.</desc>
+  <rect width="1200" height="675" fill="#07111f"/>
+  <rect x="48" y="44" width="1104" height="587" rx="22" fill="#0d1830" stroke="#20304f"/>
+  <circle cx="84" cy="80" r="9" fill="#ff5f56"/>
+  <circle cx="112" cy="80" r="9" fill="#ffbd2e"/>
+  <circle cx="140" cy="80" r="9" fill="#27c93f"/>
+  <text x="72" y="135" fill="#8be9fd" font-family="Menlo, Consolas, monospace" font-size="26">$ python examples/customer_support_app.py</text>
+  <text x="72" y="180" fill="#e6edf7" font-family="Menlo, Consolas, monospace" font-size="24">robyn-mcp listening at http://localhost:8080/mcp</text>
+  <text x="72" y="245" fill="#8be9fd" font-family="Menlo, Consolas, monospace" font-size="26">$ robyn-mcp doctor http://localhost:8080/mcp --json</text>
+  <text x="72" y="290" fill="#2cf2b2" font-family="Menlo, Consolas, monospace" font-size="24">PASS initialize, tools/list, JSON-RPC errors, session deletion</text>
+  <text x="72" y="355" fill="#8be9fd" font-family="Menlo, Consolas, monospace" font-size="26">$ robyn-mcp inspect-openapi examples/openapi.json --json</text>
+  <text x="72" y="400" fill="#e6edf7" font-family="Menlo, Consolas, monospace" font-size="24">recommendedTools: get_health, get_customer</text>
+  <text x="72" y="438" fill="#ffb86c" font-family="Menlo, Consolas, monospace" font-size="24">approvalRequiredTools: delete_customer</text>
+  <text x="72" y="505" fill="#8be9fd" font-family="Menlo, Consolas, monospace" font-size="26">$ robyn-mcp invoke-openapi examples/openapi.json --operation get_customer</text>
+  <text x="72" y="550" fill="#2cf2b2" font-family="Menlo, Consolas, monospace" font-size="24">200 {"customer_id":"cus_123","status":"active"}</text>
+  <text x="72" y="600" fill="#94a3b8" font-family="Menlo, Consolas, monospace" font-size="22">Governed Robyn APIs to MCP tools, resources, prompts, and OpenAPI operations</text>
+</svg>
+

@@ -1,9 +1,7 @@
-
 from __future__ import annotations
 
 from collections.abc import Callable
 from typing import Any
-
 
 ROB_MCP_META = "__robyn_mcp__"
 ROB_MCP_RESOURCE_META = "__robyn_mcp_resource__"
@@ -27,6 +25,8 @@ def expose_tool(
     cache_ttl_seconds: int | None = None,
     cache_tags: list[str] | None = None,
     invalidate_tags: list[str] | None = None,
+    risk: str | None = None,
+    approval_required: bool = False,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         setattr(
@@ -48,6 +48,8 @@ def expose_tool(
                 "cache_ttl_seconds": cache_ttl_seconds,
                 "cache_tags": cache_tags or [],
                 "invalidate_tags": invalidate_tags or [],
+                "risk": risk,
+                "approval_required": approval_required,
             },
         )
         return func

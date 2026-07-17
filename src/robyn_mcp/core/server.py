@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from robyn_mcp.core.compat import build_compatibility_report
 from robyn_mcp.core.config import RobynMCPConfig
@@ -9,29 +10,36 @@ from robyn_mcp.core.describe import build_tool_description
 from robyn_mcp.core.executor import ToolExecutor
 from robyn_mcp.core.filters import FilterEngine
 from robyn_mcp.core.introspect import extract_prompts, extract_resources, extract_routes
-from robyn_mcp.core.response_cache import ToolResponseCache, normalize_tag
 from robyn_mcp.core.models import PromptDefinition, ResourceDefinition, ToolDefinition
 from robyn_mcp.core.naming import slugify_operation, unique_name
+from robyn_mcp.core.operations import (
+    Operation,
+    OperationRisk,
+    classify_operation_risk,
+    score_operation_contract,
+)
+from robyn_mcp.core.response_cache import ToolResponseCache, normalize_tag
+from robyn_mcp.install_notice import build_install_banner
 from robyn_mcp.observability.metrics import MetricsCollector
 from robyn_mcp.playground.ui import build_playground_html
 from robyn_mcp.schemas.json_schema import signature_to_input_schema
 from robyn_mcp.security.auth import HeaderPrincipalResolver, PrincipalResolver
 from robyn_mcp.security.policy import PolicyEngine, RequestContext
 from robyn_mcp.transport.http import MCPDispatcher, MCPTransportError
-from robyn_mcp.transport.protocol import INTERNAL_ERROR, jsonrpc_error, INVALID_REQUEST
-from robyn_mcp.install_notice import build_install_banner
+from robyn_mcp.transport.protocol import INTERNAL_ERROR, jsonrpc_error
 
 PARSE_ERROR = -32700
 
+
 class RobynMCP:
     def __init__(
-            self,
-            app: Any,
-            name: str | None = None,
-            description: str | None = None,
-            config: RobynMCPConfig | None = None,
-            policy: PolicyEngine | None = None,
-            principal_resolver: PrincipalResolver | None = None,
+        self,
+        app: Any,
+        name: str | None = None,
+        description: str | None = None,
+        config: RobynMCPConfig | None = None,
+        policy: PolicyEngine | None = None,
+        principal_resolver: PrincipalResolver | None = None,
     ) -> None:
         self.app = app
         self.config = config or RobynMCPConfig(
@@ -126,13 +134,17 @@ class RobynMCP:
         tags.extend(self._normalize_tag_values(tool.metadata.cache_tags))
         tags.extend(self._normalize_tag_values([f"tool:{tool.name}"]))
         tags.extend(self._normalize_tag_values([f"route:{tool.metadata.path}"]))
-        tags.extend(self._normalize_tag_values([f"tag:{tag}" for tag in (tool.metadata.tags or [])]))
+        tags.extend(
+            self._normalize_tag_values([f"tag:{tag}" for tag in (tool.metadata.tags or [])])
+        )
         return self._normalize_tag_values(tags)
 
     def _invalidation_tags_for_tool(self, tool: ToolDefinition) -> list[str]:
         tags: list[str] = []
         tags.extend(self._normalize_tag_values(tool.metadata.invalidate_tags))
-        tags.extend(self._normalize_tag_values([f"tag:{tag}" for tag in (tool.metadata.tags or [])]))
+        tags.extend(
+            self._normalize_tag_values([f"tag:{tag}" for tag in (tool.metadata.tags or [])])
+        )
         return self._normalize_tag_values(tags)
 
     def _tool_cache_ttl(self, tool: ToolDefinition) -> int:
@@ -157,6 +169,17 @@ class RobynMCP:
                 continue
 
             tool_name = unique_name(slugify_operation(route.operation_id), seen)
+            risk = (
+                route.risk
+                or classify_operation_risk(
+                    name=tool_name,
+                    method=route.method,
+                    path=route.path,
+                    side_effect=route.side_effect,
+                    idempotent=route.idempotent,
+                    tags=route.tags,
+                ).value
+            )
 
             annotations = {
                 "idempotentHint": bool(route.idempotent) if route.idempotent is not None else None,
@@ -165,6 +188,17 @@ class RobynMCP:
                 "authScopes": route.auth_scopes or None,
                 "requiredPermissions": route.required_permissions or None,
                 "openWorldSafe": not route.side_effect and not route.requires_auth,
+                "risk": risk,
+                "approvalRequired": route.approval_required
+                or risk
+                in {
+                    "irreversible_mutation",
+                    "financial_action",
+                    "data_deletion",
+                    "credential_action",
+                    "admin_action",
+                    "external_communication",
+                },
             }
 
             # NEW: expose source / auto-generation info if present on RouteMetadata
@@ -207,6 +241,32 @@ class RobynMCP:
                 metadata=route,
                 annotations=annotations,
             )
+            operation_risk = (
+                OperationRisk(risk)
+                if risk in OperationRisk._value2member_map_
+                else classify_operation_risk(
+                    name=tool.name,
+                    method=route.method,
+                    path=route.path,
+                    side_effect=route.side_effect,
+                    idempotent=route.idempotent,
+                    tags=route.tags,
+                )
+            )
+            operation = Operation(
+                name=tool.name,
+                description=tool.description or "",
+                input_schema=tool.input_schema,
+                output_schema=route.response_schema,
+                method=route.method,
+                path=route.path,
+                side_effect=route.side_effect,
+                auth_requirements=route.auth_scopes or route.required_permissions,
+                tags=route.tags,
+                risk=operation_risk,
+                metadata={"source": route.source, "operation_id": route.operation_id},
+            )
+            tool.annotations["contractQuality"] = score_operation_contract(operation)
             tool.annotations = {k: v for k, v in tool.annotations.items() if v is not None}
             tools.append(tool)
 
@@ -226,6 +286,67 @@ class RobynMCP:
     def list_tools(self) -> list[ToolDefinition]:
         return list(self._tools)
 
+    def list_operations(self) -> list[Operation]:
+        operations: list[Operation] = []
+        for tool in self._tools:
+            risk_value = str((tool.annotations or {}).get("risk") or "")
+            risk = (
+                OperationRisk(risk_value)
+                if risk_value in OperationRisk._value2member_map_
+                else classify_operation_risk(
+                    name=tool.name,
+                    method=tool.metadata.method,
+                    path=tool.metadata.path,
+                    side_effect=tool.metadata.side_effect,
+                    idempotent=tool.metadata.idempotent,
+                    tags=tool.metadata.tags,
+                )
+            )
+            operations.append(
+                Operation(
+                    name=tool.name,
+                    description=tool.description or "",
+                    input_schema=tool.input_schema,
+                    output_schema=tool.metadata.response_schema,
+                    method=tool.metadata.method,
+                    path=tool.metadata.path,
+                    side_effect=tool.metadata.side_effect,
+                    auth_requirements=tool.metadata.auth_scopes
+                    or tool.metadata.required_permissions,
+                    tags=tool.metadata.tags,
+                    risk=risk,
+                    metadata={
+                        "source": tool.metadata.source,
+                        "operation_id": tool.metadata.operation_id,
+                        "approval_required": (tool.annotations or {}).get(
+                            "approvalRequired", False
+                        ),
+                    },
+                )
+            )
+        return operations
+
+    def operation_readiness_report(self) -> dict[str, Any]:
+        operations = self.list_operations()
+        scored = [score_operation_contract(operation) for operation in operations]
+        hidden = [tool.metadata.operation_id for tool in self._tools if not tool.metadata.exposed]
+        approval_required = [
+            tool.name for tool in self._tools if (tool.annotations or {}).get("approvalRequired")
+        ]
+        return {
+            "operationCount": len(operations),
+            "recommendedToolCount": len([op for op in operations if op.risk.value == "read_only"]),
+            "approvalRequiredCount": len(approval_required),
+            "approvalRequiredTools": approval_required,
+            "hiddenOperations": hidden,
+            "averageContractScore": round(sum(item["score"] for item in scored) / len(scored), 2)
+            if scored
+            else None,
+            "toolScores": {
+                operation.name: scored[index] for index, operation in enumerate(operations)
+            },
+        }
+
     def list_resources(self) -> list[ResourceDefinition]:
         return list(self._resources)
 
@@ -243,9 +364,17 @@ class RobynMCP:
         report.setdefault("features", {})
         if isinstance(report["features"], dict):
             report["features"]["playground"] = getattr(self.config, "enable_playground", False)
-            report["features"]["openapi_autogen"] = getattr(self.config, "auto_expose_openapi", False)
+            report["features"]["openapi_autogen"] = getattr(
+                self.config, "auto_expose_openapi", False
+            )
             report["features"]["tool_tracing"] = getattr(self.config, "enable_tool_tracing", False)
-            report["features"]["response_cache"] = getattr(self.config, "enable_response_cache", False)
+            report["features"]["response_cache"] = getattr(
+                self.config, "enable_response_cache", False
+            )
+            report["features"]["risk_classification"] = True
+            report["features"]["operation_contracts"] = True
+
+        report["operationReadiness"] = self.operation_readiness_report()
 
         return report
 
@@ -256,11 +385,11 @@ class RobynMCP:
         return self.metrics.recent_audit_events(limit=limit)
 
     def build_request_context(
-            self,
-            *,
-            request: Any,
-            session_id: str | None,
-            protocol_version: str | None,
+        self,
+        *,
+        request: Any,
+        session_id: str | None,
+        protocol_version: str | None,
     ) -> RequestContext:
         raw_headers = getattr(request, "headers", None)
 
@@ -300,20 +429,20 @@ class RobynMCP:
                     return headers
 
             for name in (
-                    "accept",
-                    "content-type",
-                    "content-length",
-                    "host",
-                    "user-agent",
-                    "origin",
-                    "authorization",
-                    "mcp-session-id",
-                    "mcp-protocol-version",
-                    "cookie",
-                    "x-tenant-id",
-                    "x-auth-sub",
-                    "x-client-id",
-                    "x-request-id",
+                "accept",
+                "content-type",
+                "content-length",
+                "host",
+                "user-agent",
+                "origin",
+                "authorization",
+                "mcp-session-id",
+                "mcp-protocol-version",
+                "cookie",
+                "x-tenant-id",
+                "x-auth-sub",
+                "x-client-id",
+                "x-request-id",
             ):
                 try:
                     value = raw.get(name)
@@ -339,9 +468,7 @@ class RobynMCP:
         normalized_headers = _normalize_headers(raw_headers)
 
         forwarded = {
-            k: v
-            for k, v in normalized_headers.items()
-            if k in self.config.forwarded_headers
+            k: v for k, v in normalized_headers.items() if k in self.config.forwarded_headers
         }
 
         cookies: dict[str, str] = {}
@@ -381,10 +508,10 @@ class RobynMCP:
             return repr(result)
 
     async def call_tool(
-            self,
-            name: str,
-            arguments: dict[str, Any] | None = None,
-            context: RequestContext | None = None,
+        self,
+        name: str,
+        arguments: dict[str, Any] | None = None,
+        context: RequestContext | None = None,
     ) -> Any:
         arguments = arguments or {}
         context = context or RequestContext()
@@ -453,10 +580,10 @@ class RobynMCP:
         )
 
     async def get_prompt(
-            self,
-            name: str,
-            arguments: dict[str, Any] | None = None,
-            context: RequestContext | None = None,
+        self,
+        name: str,
+        arguments: dict[str, Any] | None = None,
+        context: RequestContext | None = None,
     ) -> Any:
         arguments = arguments or {}
         context = context or RequestContext()
@@ -503,6 +630,7 @@ class RobynMCP:
             return self._robyn_response(status, headers, body)
 
         try:
+
             @self.app.delete(mcp_path)
             async def _mcp_delete(request: Any):
                 status, headers, body = await self.dispatcher.handle_delete(request)
@@ -511,6 +639,7 @@ class RobynMCP:
             pass
 
         try:
+
             @self.app.options(mcp_path)
             async def _mcp_options(request: Any):
                 status, headers, body = await self.dispatcher.handle_options(request)

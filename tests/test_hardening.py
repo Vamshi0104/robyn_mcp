@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import asyncio
@@ -44,7 +43,9 @@ def customer_profile(customer_id: str):
 
 
 def make_server():
-    app = FakeApp([FakeRoute("/customers/{customer_id}", "GET", customer_profile, auth_required=True)])
+    app = FakeApp(
+        [FakeRoute("/customers/{customer_id}", "GET", customer_profile, auth_required=True)]
+    )
     config = RobynMCPConfig(require_session=False, redact_response_fields={"secret_token"})
     return RobynMCP(app, config=config)
 

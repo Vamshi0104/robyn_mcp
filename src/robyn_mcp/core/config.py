@@ -10,7 +10,7 @@ class RobynMCPConfig(BaseModel):
     name: str = "robyn-mcp"
     server_name: str = "robyn-mcp"
     description: str = "Robyn MCP server"
-    version: str = "1.0.1"
+    version: str = "1.0.2"
 
     # Protocol
     protocol_version: str = "2025-11-25"
@@ -124,7 +124,7 @@ class RobynMCPConfig(BaseModel):
     metrics_window_size: int = 2048
 
     @model_validator(mode="after")
-    def validate_filters(self) -> "RobynMCPConfig":
+    def validate_filters(self) -> RobynMCPConfig:
         if not self.mcp_path.startswith("/"):
             raise ValueError("mcp_path must start with '/'")
         if not self.playground_path.startswith("/"):
@@ -140,9 +140,14 @@ class RobynMCPConfig(BaseModel):
         if self.response_cache_max_entries <= 0:
             raise ValueError("response_cache_max_entries must be > 0")
         if self.auto_expose_tag_allowlist and self.auto_expose_tag_denylist:
-            raise ValueError("auto_expose_tag_allowlist and auto_expose_tag_denylist cannot be used together")
+            raise ValueError(
+                "auto_expose_tag_allowlist and auto_expose_tag_denylist cannot be used together"
+            )
         if self.auto_expose_operation_allowlist and self.auto_expose_operation_denylist:
-            raise ValueError("auto_expose_operation_allowlist and auto_expose_operation_denylist cannot be used together")
+            raise ValueError(
+                "auto_expose_operation_allowlist and auto_expose_operation_denylist "
+                "cannot be used together"
+            )
         return self
 
     def metadata_payload(self) -> dict[str, Any]:

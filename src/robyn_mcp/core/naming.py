@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 
-
 _NON_ALNUM = re.compile(r"[^a-zA-Z0-9_]+")
 
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 JSONRPC_VERSION = "2.0"
 
 INVALID_REQUEST = -32600

@@ -8,9 +8,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/favicon/apple-touch-icon.png">
     <meta name="theme-color" content="#0b1020">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>robyn-mcp — Turn Robyn APIs into MCP servers</title>
+    <title>robyn-mcp — Governed MCP for Robyn APIs</title>
     <meta name="description"
-          content="robyn-mcp helps developers expose Robyn apps as MCP servers with tools, resources, prompts, OpenAPI autogeneration, observability, and a built-in playground."/>
+          content="robyn-mcp is the Robyn reference adapter for governed API-to-MCP infrastructure with tools, resources, prompts, risk metadata, observability, validation, and PyPI-ready releases."/>
     <style>
         :root {
           --bg: #07111f;
@@ -26,7 +26,7 @@
           --danger: #ff6b7a;
           --shadow: 0 24px 80px rgba(0,0,0,0.35);
           --radius: 24px;
-          --max: 1220px;
+          --max: 1160px;
         }
 
         * { box-sizing: border-box; }
@@ -54,10 +54,15 @@
         }
         nav {
           display: flex; align-items: center; justify-content: space-between;
-          gap: 16px; min-height: 76px;
+          gap: 18px; min-height: 76px;
         }
         .brand {
-          display: flex; align-items: center; gap: 14px; font-weight: 800; letter-spacing: -0.03em;
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          flex: 0 0 auto;
         }
         .brand-badge {
           width: 42px; height: 42px; border-radius: 14px;
@@ -65,25 +70,54 @@
           box-shadow: 0 12px 30px rgba(124,92,255,0.35);
           display: grid; place-items: center; font-size: 18px; font-weight: 900;
         }
-        .brand small { display: block; color: var(--muted); font-weight: 600; letter-spacing: 0; }
+        .brand small {
+          display: block;
+          max-width: 210px;
+          color: var(--muted);
+          font-weight: 600;
+          letter-spacing: 0;
+          line-height: 1.25;
+        }
         .nav-links {
-          display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          flex: 1 1 auto;
+          min-width: 0;
+          flex-wrap: nowrap;
         }
         .nav-links a {
-          padding: 10px 14px; border-radius: 999px; color: var(--muted); font-weight: 600; font-size: 14px;
+          padding: 9px 10px;
+          border-radius: 999px;
+          color: var(--muted);
+          font-weight: 600;
+          font-size: 14px;
+          white-space: nowrap;
           transition: .2s ease;
         }
         .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
         .nav-cta {
           display: inline-flex; align-items: center; gap: 10px;
-          padding: 12px 18px; border-radius: 999px; font-weight: 800; font-size: 14px;
+          flex: 0 0 auto;
+          padding: 12px 18px;
+          border-radius: 999px;
+          font-weight: 800;
+          font-size: 14px;
+          white-space: nowrap;
           background: linear-gradient(135deg, var(--primary), var(--primary-2));
           box-shadow: 0 14px 32px rgba(124,92,255,0.35);
         }
 
         .hero { padding: 72px 0 36px; }
         .hero-grid {
-          display: grid; grid-template-columns: 1.15fr .85fr; gap: 28px; align-items: center;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(380px, 500px);
+          gap: 24px;
+          align-items: center;
+        }
+        .hero-grid > * {
+          min-width: 0;
         }
         .eyebrow {
           display: inline-flex; align-items: center; gap: 10px;
@@ -116,7 +150,58 @@
         .hero-card {
           background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
           border: 1px solid var(--line);
-          border-radius: 28px; padding: 22px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+          border-radius: 28px;
+          padding: 18px;
+          box-shadow: var(--shadow);
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+          max-width: 500px;
+          justify-self: center;
+        }
+        .hero-art {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          gap: 16px;
+          min-width: 0;
+          overflow: hidden;
+        }
+        .hero-logo {
+          border-radius: 22px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.04);
+          aspect-ratio: 16 / 9;
+        }
+        .hero-logo img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .flow {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          grid-auto-rows: 66px;
+          gap: 10px;
+          width: 100%;
+          min-width: 0;
+        }
+        .flow span {
+          width: 100%;
+          min-width: 0;
+          height: 66px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 10px 12px;
+          border-radius: 16px;
+          color: var(--text);
+          font-size: 15px;
+          line-height: 1.2;
+          font-weight: 800;
+          overflow-wrap: anywhere;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.08);
         }
         .hero-card::before {
           content: ""; position: absolute; inset: 0;
@@ -247,7 +332,27 @@
 
         @media (max-width: 1080px) {
           .hero-grid, .split, .download, .steps, .features, .stats { grid-template-columns: 1fr; }
+          .hero-card { max-width: 500px; }
           .nav-links { display: none; }
+        }
+        @media (max-width: 1240px) {
+          .nav-links a {
+            padding-inline: 8px;
+            font-size: 13px;
+          }
+          .nav-cta {
+            padding-inline: 16px;
+          }
+        }
+        @media (max-width: 520px) {
+          .hero-card { padding: 14px; }
+          .flow {
+            grid-template-columns: 1fr;
+            grid-auto-rows: 56px;
+          }
+          .flow span {
+            height: 56px;
+          }
         }
     </style>
 </head>
@@ -259,17 +364,20 @@
                 <div class="brand-badge">R</div>
                 <div>
                     robyn-mcp
-                    <small>Robyn APIs → MCP servers</small>
+                    <small>Governed Robyn APIs to MCP</small>
                 </div>
             </a>
             <div class="nav-links">
                 <a href="#features">Features</a>
+                <a href="#demo">Demo</a>
+                <a href="#governance">Governance</a>
+                <a href="#compatibility">Compatibility</a>
                 <a href="#how">How it works</a>
                 <a href="#use-cases">Use cases</a>
                 <a href="#install">Install</a>
                 <a href="#faq">FAQ</a>
             </div>
-            <a class="nav-cta" href="#install">Download v1.0.1</a>
+            <a class="nav-cta" href="#install">Download v1.0.2</a>
         </nav>
     </div>
 </div>
@@ -278,38 +386,46 @@
     <section class="hero">
         <div class="container hero-grid">
             <div>
-                <div class="eyebrow">Fast • Modern • MCP-ready • v1.0.1</div>
-                <h1>Turn your Robyn APIs into beautiful, production-ready MCP servers.</h1>
+                <div class="eyebrow">Robyn reference adapter • governed MCP • v1.0.2</div>
+                <h1>Turn Robyn APIs into governed MCP surfaces agents can safely use.</h1>
                 <p>
-                    robyn-mcp helps developers expose tools, resources, and prompts from Robyn apps with minimal code.
-                    Ship OpenAPI autogeneration, observability, prompt endpoints, resource discovery, and a polished
-                    browser playground — without building the protocol layer yourself.
+                    robyn-mcp exposes tools, resources, and prompts from existing Robyn apps with risk metadata,
+                    approval-ready annotations, OpenAPI inspection, upstream gateway invocation, observability,
+                    validation, and a polished playground.
                 </p>
                 <div class="hero-actions">
                     <a class="btn btn-primary" href="#install">Get Started</a>
-                    <a class="btn btn-secondary" href="#features">See Features</a>
+                    <a class="btn btn-secondary" href="#governance">See Governance</a>
                 </div>
             </div>
             <div class="hero-card">
-                <div class="code-window">
-                    <div class="window-top"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                <div class="hero-art">
+                    <div class="hero-logo">
+                        <img src="./assets/images/robyn_mcp.png" alt="robyn-mcp project visual">
                     </div>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                    <pre><code id="code-snippet">from robyn import Robyn
+                    <div class="flow">
+                        <span>Existing API</span>
+                        <span>RobynMCP</span>
+                        <span>Policies + Traces</span>
+                        <span>AI Clients</span>
+                    </div>
+                    <div class="code-window">
+                        <div class="window-top"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                        </div>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code id="code-snippet">from robyn import Robyn
 from robyn_mcp import RobynMCP, RobynMCPConfig
 
 app = Robyn(__file__)
 
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
+@app.get("/customers/:customer_id")
+async def get_customer(customer_id: str):
+    return {"customer_id": customer_id, "status": "active"}
 
 mcp = RobynMCP(
     app,
     config=RobynMCPConfig(
-        auto_expose_openapi=True,
-        enable_resources=True,
-        enable_prompts=True,
+        require_session=False,
         enable_playground=True,
         enable_tool_tracing=True,
     ),
@@ -317,6 +433,7 @@ mcp = RobynMCP(
 
 mcp.mount_http()
 app.start(port=8080)</code></pre>
+                    </div>
                 </div>
             </div>
         </div>
@@ -324,13 +441,47 @@ app.start(port=8080)</code></pre>
 
     <section>
         <div class="container stats">
-            <div class="stat"><strong>5 min</strong><span>to turn an existing Robyn API into an MCP endpoint.</span>
+            <div class="stat"><strong>3 min</strong><span>to reach a visible local MCP success path from an existing Robyn API.</span>
             </div>
-            <div class="stat"><strong>1 page</strong><span>to expose tools, resources, prompts, and observability in one surface.</span>
+            <div class="stat"><strong>1 model</strong><span>for tools, resources, prompts, risk metadata, and readiness checks.</span>
             </div>
-            <div class="stat"><strong>0 protocol pain</strong><span>you focus on routes and business logic, not JSON-RPC plumbing.</span>
+            <div class="stat"><strong>0 header sprawl</strong><span>credential forwarding uses explicit allowlists instead of forwarding everything.</span>
             </div>
-            <div class="stat"><strong>Built-in UX</strong><span>playground, CLI utilities, discovery metadata, and smooth local validation.</span>
+            <div class="stat"><strong>1.0.2</strong><span>release line focused on OpenAPI inspection, gateway invocation, and stronger validation.</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo">
+        <div class="container split">
+            <div>
+                <div class="section-head">
+                    <h2>Demo workflow</h2>
+                    <p>See the core path from an existing Robyn app to a governed MCP surface: route discovery,
+                        browser inspection, endpoint health checks, OpenAPI scoring, and upstream invocation.</p>
+                </div>
+                <div class="list">
+                    <div class="list-item">
+                        <div class="check">1</div>
+                        <div><b>Start from a real API</b>
+                            <p><code>python examples/customer_support_app.py</code></p></div>
+                    </div>
+                    <div class="list-item">
+                        <div class="check">2</div>
+                        <div><b>Validate the MCP surface</b>
+                            <p><code>robyn-mcp doctor</code>, <code>inspect-openapi</code>, and <code>invoke-openapi</code>
+                                make generated tools reviewable before release.</p></div>
+                    </div>
+                    <div class="list-item">
+                        <div class="check">3</div>
+                        <div><b>Inspect in the playground</b>
+                            <p>Open <code>/mcp/playground</code>, list tools, review risk metadata, and call the read
+                                customer tool.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-card">
+                <img src="./docs/assets/demo_terminal.svg" alt="robyn-mcp demo terminal preview">
             </div>
         </div>
     </section>
@@ -339,13 +490,13 @@ app.start(port=8080)</code></pre>
         <div class="container">
             <div class="section-head">
                 <h2>Why developers download robyn-mcp</h2>
-                <p>Everything users expect from a modern integration layer: automatic discovery, strongly structured
-                    tool schemas, browsable resources, reusable prompts, and instant live inspection.</p>
+                <p>Everything users expect from a modern MCP adapter: automatic discovery, strongly structured
+                    tool schemas, browsable resources, reusable prompts, governance metadata, and instant live inspection.</p>
             </div>
             <div class="features">
                 <article class="card">
                     <div class="icon">⚙️</div>
-                    <h3>OpenAPI tool autogeneration</h3>
+                    <h3>OpenAPI-aware tool generation</h3>
                     <p>Convert Robyn routes into MCP tools automatically. Safe GETs become read tools, POSTs become
                         action tools, and input schemas are inferred from your API contracts.</p></article>
                 <article class="card">
@@ -366,8 +517,13 @@ app.start(port=8080)</code></pre>
                 <article class="card">
                     <div class="icon">🧪</div>
                     <h3>CLI and validation flow</h3>
-                    <p>Inspect, validate, benchmark, and audit your endpoint with built-in tooling designed to make
-                        release checks much easier.</p></article>
+                    <p>Inspect, validate, benchmark, invoke OpenAPI operations, and audit your endpoint with built-in
+                        tooling designed to make release checks much easier.</p></article>
+                <article class="card">
+                    <div class="icon">🔌</div>
+                    <h3>Gateway and FastAPI source</h3>
+                    <p>Evaluate OpenAPI contracts, invoke selected upstream operations, and discover FastAPI operations
+                        through <code>app.openapi()</code> without adding a hard FastAPI dependency.</p></article>
                 <article class="card">
                     <div class="icon">🌐</div>
                     <h3>Beautiful playground</h3>
@@ -375,9 +531,90 @@ app.start(port=8080)</code></pre>
                         resources, resolve prompts, and call methods instantly.</p></article>
                 <article class="card">
                     <div class="icon">🔐</div>
+                    <h3>Governance metadata</h3>
+                    <p>Tools carry risk, approval, auth, permission, cache, and contract-quality annotations so teams can
+                        review what agents are allowed to do.</p></article>
+                <article class="card">
+                    <div class="icon">🔐</div>
                     <h3>Production-minded defaults</h3>
                     <p>Header forwarding, session management, JSON-RPC handling, transport metadata, and configurable
                         feature flags give you a clean v1 deployment path.</p></article>
+            </div>
+        </div>
+    </section>
+
+    <section id="governance">
+        <div class="container split">
+            <div>
+                <div class="section-head">
+                    <h2>Governed API-to-MCP</h2>
+                    <p>API-to-MCP generation will become common. The stronger project is the one that makes generated
+                        tools safe, observable, policy-controlled, and verifiably compatible.</p>
+                </div>
+                <div class="list">
+                    <div class="list-item">
+                        <div class="check">✓</div>
+                        <div><b>Risk classification</b>
+                            <p>Read-only, mutation, deletion, financial, credential, admin, sensitive-data, and external-communication categories.</p></div>
+                    </div>
+                    <div class="list-item">
+                        <div class="check">✓</div>
+                        <div><b>Approval-ready tools</b>
+                            <p>Dangerous operations can be marked as approval-required and audited before production use.</p></div>
+                    </div>
+                    <div class="list-item">
+                        <div class="check">✓</div>
+                        <div><b>Contract quality scoring</b>
+                            <p>Generated tools are scored for names, descriptions, schemas, output schemas, and safety metadata.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-card">
+                <div class="code-window">
+                    <div class="window-top"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                    </div>
+                    <pre><code>Tool: delete_customer
+
+Risk: data_deletion
+Approval: required
+Schema quality: scored
+Audit: enabled
+
+Operation sources:
+Robyn → OpenAPI → FastAPI</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="compatibility">
+        <div class="container">
+            <div class="section-head">
+                <h2>Compatibility is explicit</h2>
+                <p>robyn-mcp reports supported protocol versions, feature flags, transport status, and client matrix
+                    hints. Verification labels are backed by repeatable client tests.</p>
+            </div>
+            <div class="features">
+                <article class="card">
+                    <div class="icon">🧪</div>
+                    <h3>Doctor command</h3>
+                    <p><code>robyn-mcp doctor http://localhost:8080/mcp --json</code> checks metadata, initialize,
+                        capability negotiation, tool discovery, protocol reporting, and production warnings.</p></article>
+                <article class="card">
+                    <div class="icon">🧩</div>
+                    <h3>OpenAPI inspection</h3>
+                    <p><code>robyn-mcp inspect-openapi ./openapi.json --json</code> reports recommended tools,
+                        approval-required actions, filtered operations, risk categories, and contract scores.</p></article>
+                <article class="card">
+                    <div class="icon">🔌</div>
+                    <h3>OpenAPI invocation</h3>
+                    <p><code>robyn-mcp invoke-openapi ./openapi.json --upstream http://localhost:8000 --operation get_health</code>
+                        calls one upstream operation using path, query, body, and header rules from the contract.</p></article>
+                <article class="card">
+                    <div class="icon">📋</div>
+                    <h3>Runtime matrix</h3>
+                    <p><code>robyn-mcp runtime --json</code> lists protocol checks, Streamable HTTP status, planned stdio
+                        work, optional SSE, and client compatibility states.</p></article>
             </div>
         </div>
     </section>
@@ -442,7 +679,7 @@ curl -s http://localhost:8080/mcp \
                     <div class="step-number">01</div>
                     <h3>Commerce and retail</h3>
                     <p>A Nike-style product backend can expose inventory lookup as tools, store context as resources,
-                        and sales playbooks as prompts for internal assistants.</p></article>
+                        and sales playbooks as prompts for team assistants.</p></article>
                 <article class="step">
                     <div class="step-number">02</div>
                     <h3>Internal developer platforms</h3>
@@ -460,15 +697,15 @@ curl -s http://localhost:8080/mcp \
     <section id="install">
         <div class="container download">
             <div class="price-card">
-                <div class="price-badge">Download v1.0.1</div>
-                <h3>Install robyn-mcp and launch in minutes</h3>
-                <p>Perfect for developers who already have a Robyn application and want MCP support, discovery,
-                    observability, and a polished playground with minimal setup.</p>
+                <div class="price-badge">Download v1.0.2</div>
+                <h3>Install robyn-mcp and validate the endpoint</h3>
+                <p>Perfect for developers who already have a Robyn application and want MCP support, governance metadata,
+                    discovery, observability, and a polished playground with minimal setup.</p>
                 <div class="install-box">
                     <button class="copy-btn" onclick="copyCodePip(this)">Copy</button>
                     <pre><code id="copyCodePip">python -m pip install --upgrade pip
 pip install robyn robyn-mcp
-robyn-mcp install-note</code></pre>
+robyn-mcp doctor http://localhost:8080/mcp --json</code></pre>
                 </div>
                 <div class="hero-actions" style="margin-top:18px;">
                     <a class="btn btn-primary" href="#quickstart">Quickstart</a>
@@ -480,7 +717,7 @@ robyn-mcp install-note</code></pre>
                 <h3>Minimal setup</h3>
                 <button class="copy-btn" onclick="copyCodeSetup(this)">Copy</button>
                 <pre><code id="copyCodeSetup">from robyn import Robyn
-from robyn_mcp import RobynMCP
+from robyn_mcp import RobynMCP, RobynMCPConfig
 
 app = Robyn(__file__)
 
@@ -488,7 +725,7 @@ app = Robyn(__file__)
 async def health():
     return {"status": "ok"}
 
-mcp = RobynMCP(app)
+mcp = RobynMCP(app, config=RobynMCPConfig(require_session=False))
 mcp.mount_http()
 app.start(port=8080)</code></pre>
             </div>
@@ -509,7 +746,10 @@ app.start(port=8080)</code></pre>
                     <p>Yes. You can expose MCP resources and prompts, not just callable tools.</p></article>
                 <article class="faq-item"><h3>Does it support automatic tool generation?</h3>
                     <p>Yes. With OpenAPI autogeneration enabled, supported routes can be surfaced as MCP tools
-                        automatically.</p></article>
+                        automatically. You can also inspect and benchmark standalone OpenAPI documents.</p></article>
+                <article class="faq-item"><h3>How do I verify an endpoint?</h3>
+                    <p>Run <code>robyn-mcp doctor http://localhost:8080/mcp --json</code> before connecting production
+                        clients.</p></article>
                 <article class="faq-item"><h3>Can I inspect it in the browser?</h3>
                     <p>Yes. The built-in playground provides a modern UI for metadata, tool calls, resources, prompts,
                         and trace inspection.</p></article>

@@ -1,8 +1,8 @@
 site_name: robyn-mcp
-site_description: Expose Robyn APIs as MCP tools, resources, and prompts.
-site_url: https://vamshi0104.github.io/robyn-mcp/
+site_description: Expose Robyn APIs as governed MCP tools, resources, and prompts.
+site_url: https://vamshi0104.github.io/robyn_mcp/
 repo_url: https://github.com/Vamshi0104/robyn_mcp
-repo_name: your-org/robyn-mcp
+repo_name: Vamshi0104/robyn_mcp
 
 theme:
   name: material
@@ -28,10 +28,11 @@ nav:
   - Quickstart: quickstart.md
   - Examples: examples.md
   - API Overview: api.md
+  - OpenAPI Source: openapi_gateway.md
   - Architecture: architecture.md
   - Compatibility: compatibility.md
   - Security: security.md
   - Deployment: deployment.md
   - Benchmarks: benchmarks.md
-  - Releases: releases.md
+  - Release: release.md
   - Roadmap: roadmap.md

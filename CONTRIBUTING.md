@@ -1,53 +1,52 @@
 # Contributing
 
-Thanks for contributing to `robyn-mcp`.
+Thanks for helping improve `robyn-mcp`. The best contributions make existing APIs safer and easier to expose through MCP.
 
-## Local setup
+## Good First Contributions
+
+- Add a repeatable client verification report.
+- Improve examples with real app flows.
+- Add OpenAPI edge-case fixtures.
+- Improve docs for installation, deployment, auth, or policy.
+- Add tests for protocol behavior, gateway invocation, or schema generation.
+
+## Local Setup
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip
-pip install -e .[dev,docs]
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
 ```
 
-## Common commands
-
-Run tests:
+## Verify Before Opening a PR
 
 ```bash
+python -m ruff check src tests examples/*.py
 pytest
-```
-
-Run lint:
-
-```bash
-ruff check .
-```
-
-Build docs:
-
-```bash
-mkdocs build --strict
-```
-
-Build package artifacts:
-
-```bash
+python -m robyn_mcp.cli release-audit --json
 python -m build
+python -m twine check dist/*
 ```
 
-## Before opening a PR
+## Compatibility Claims
 
-Please make sure you have:
-- run the test suite
-- run lint checks
-- updated docs or examples when behavior changed
-- added tests for user-facing fixes when practical
+Do not mark a client as `Verified` unless you have a repeatable test record with:
 
-## Development guidance
+- client name and version
+- `robyn-mcp` version
+- Python version
+- transport
+- exact setup steps
+- result and date
 
-- Keep defaults safe for production use.
-- Prefer explicit opt-in for resource, prompt, and OpenAPI auto-exposure features.
-- Maintain compatibility with the documented MCP HTTP flow: metadata, initialize, tools, resources, prompts, and session lifecycle.
-- Preserve user-facing setup simplicity: a clean `pip install robyn-mcp robyn` path should work on a fresh machine.
+Use the client verification issue template when reporting compatibility results.
+
+## Security Defaults
+
+Keep security behavior explicit:
+
+- Do not forward all headers by default.
+- Do not forward cookies unless configured.
+- Keep risky operations marked with risk and approval metadata.
+- Add tests for auth, policy, origin, or header-forwarding changes.

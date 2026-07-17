@@ -60,10 +60,14 @@ def test_response_cache_isolated_by_principal_context():
     )
 
     result_a = asyncio.run(
-        server.call_tool("list_orders", {}, context=RequestContext(tenant_id="acme", principal_id="user-a"))
+        server.call_tool(
+            "list_orders", {}, context=RequestContext(tenant_id="acme", principal_id="user-a")
+        )
     )
     result_b = asyncio.run(
-        server.call_tool("list_orders", {}, context=RequestContext(tenant_id="acme", principal_id="user-b"))
+        server.call_tool(
+            "list_orders", {}, context=RequestContext(tenant_id="acme", principal_id="user-b")
+        )
     )
 
     assert result_a != result_b

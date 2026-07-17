@@ -1,10 +1,11 @@
 from robyn import Robyn
+
 from robyn_mcp import RobynMCP, RobynMCPConfig, expose_tool
 
-# Quick curl checks after app.start(port=8080):
-# 1) curl -X POST http://localhost:8080/mcp -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_products","arguments":{}}}'
-# 2) curl -X POST http://localhost:8080/mcp -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"create_product","arguments":{"id":"sku-2","name":"sock","price":15}}}'
-# 3) curl -X POST http://localhost:8080/mcp -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"list_products","arguments":{}}}'
+# Quick check after app.start(port=8080):
+# 1. Call list_products twice and observe a cache hit in metrics.
+# 2. Call create_product with a new SKU.
+# 3. Call list_products again and observe fresh data after tag invalidation.
 
 app = Robyn(__file__)
 

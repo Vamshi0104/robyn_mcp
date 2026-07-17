@@ -33,11 +33,13 @@ class DummyApp:
     def get(self, path):
         def decorator(fn):
             return fn
+
         return decorator
 
     def post(self, path):
         def decorator(fn):
             return fn
+
         return decorator
 
 

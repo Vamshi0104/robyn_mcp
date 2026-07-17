@@ -65,7 +65,9 @@ class EndpointValidator:
         if body is not None:
             data = json.dumps(body).encode("utf-8")
             final_headers.setdefault("content-type", "application/json")
-        req = urllib.request.Request(self.endpoint, data=data, method=method.upper(), headers=final_headers)
+        req = urllib.request.Request(
+            self.endpoint, data=data, method=method.upper(), headers=final_headers
+        )
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 raw = resp.read().decode("utf-8")
@@ -81,6 +83,8 @@ class EndpointValidator:
             except json.JSONDecodeError:
                 parsed = {"raw": raw}
             return exc.code, {k.lower(): v for k, v in exc.headers.items()}, parsed
+        except urllib.error.URLError as exc:
+            return 0, {}, {"error": str(exc.reason)}
 
     def validate(self) -> EndpointValidationReport:
         steps: list[ValidationStep] = []
@@ -91,7 +95,9 @@ class EndpointValidator:
         tools: list[dict[str, Any]] = []
 
         status, headers, payload = self._open("GET", {"accept": "application/json"})
-        metadata_ok = status == 200 and isinstance(payload, dict) and payload.get("capabilities")
+        metadata_ok = bool(
+            status == 200 and isinstance(payload, dict) and payload.get("capabilities")
+        )
         server_name = payload.get("name") if isinstance(payload, dict) else None
         protocol_version = payload.get("protocolVersion") if isinstance(payload, dict) else None
         steps.append(
@@ -155,7 +161,11 @@ class EndpointValidator:
             },
             {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
         )
-        tools = ((payload or {}).get("result") or {}).get("tools") if isinstance(payload, dict) else None
+        tools = (
+            ((payload or {}).get("result") or {}).get("tools")
+            if isinstance(payload, dict)
+            else None
+        )
         tools = tools if isinstance(tools, list) else []
         tool_count = len(tools)
         list_ok = status == 200 and isinstance(tools, list)

@@ -29,7 +29,7 @@ def test_rate_limit_policy_blocks_after_capacity():
         config=RobynMCPConfig(
             rate_limit_enabled=True,
             rate_limit_capacity=1,
-            rate_limit_refill_per_second=1000,
+            rate_limit_refill_per_second=0,
         )
     )
     ctx = RequestContext(session_id="s1")

@@ -1,0 +1,56 @@
+name: Client verification
+description: Report a successful or failed MCP client compatibility test.
+title: "[Client]: "
+labels: ["client-verification"]
+body:
+  - type: dropdown
+    id: client
+    attributes:
+      label: Client
+      options:
+        - MCP Inspector
+        - Claude Code
+        - Claude Desktop
+        - ChatGPT
+        - Cursor
+        - VS Code
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: client_version
+    attributes:
+      label: Client version
+    validations:
+      required: true
+  - type: input
+    id: package_version
+    attributes:
+      label: robyn-mcp version
+      placeholder: "1.0.2"
+    validations:
+      required: true
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Transport
+      options:
+        - Streamable HTTP
+        - stdio
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Include commands, config, screenshots, logs, and whether `tools/list` and one `tools/call` worked.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Doctor output
+      description: Paste `robyn-mcp doctor <endpoint> --json` if available.
+      render: json
+

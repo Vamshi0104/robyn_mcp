@@ -69,5 +69,22 @@ site/
 # Local test env files
 .env
 .env.*
+pypi.txt
 
-docs/
+# Curated docs site. Keep old phase/runbook drafts local unless explicitly promoted.
+docs/*
+!docs/assets/
+docs/assets/*
+!docs/assets/demo_terminal.svg
+!docs/index.md
+!docs/quickstart.md
+!docs/examples.md
+!docs/api.md
+!docs/openapi_gateway.md
+!docs/architecture.md
+!docs/compatibility.md
+!docs/security.md
+!docs/deployment.md
+!docs/benchmarks.md
+!docs/release.md
+!docs/roadmap.md

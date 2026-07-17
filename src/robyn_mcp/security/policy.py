@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -28,7 +27,14 @@ def _redact_value(value: Any, redact_fields: set[str]) -> Any:
     if not redact_fields:
         return value
     if isinstance(value, dict):
-        return {key: ("***REDACTED***" if str(key) in redact_fields else _redact_value(item, redact_fields)) for key, item in value.items()}
+        return {
+            key: (
+                "***REDACTED***"
+                if str(key) in redact_fields
+                else _redact_value(item, redact_fields)
+            )
+            for key, item in value.items()
+        }
     if isinstance(value, list):
         return [_redact_value(item, redact_fields) for item in value]
     if isinstance(value, tuple):
@@ -39,7 +45,14 @@ def _redact_value(value: Any, redact_fields: set[str]) -> Any:
 class PolicyEngine:
     def __init__(self, config: RobynMCPConfig | None = None) -> None:
         self.config = config or RobynMCPConfig()
-        self._limiter = TokenBucketLimiter(capacity=self.config.rate_limit_capacity, refill_per_second=self.config.rate_limit_refill_per_second) if self.config.rate_limit_enabled else None
+        self._limiter = (
+            TokenBucketLimiter(
+                capacity=self.config.rate_limit_capacity,
+                refill_per_second=self.config.rate_limit_refill_per_second,
+            )
+            if self.config.rate_limit_enabled
+            else None
+        )
 
     def _rate_limit_key(self, tool_name: str, context: RequestContext) -> str:
         scope = self.config.rate_limit_scope
@@ -58,7 +71,9 @@ class PolicyEngine:
             except RateLimitExceeded as exc:
                 raise PermissionError(str(exc)) from exc
 
-    async def before_call(self, tool_name: str, arguments: dict[str, Any], context: RequestContext) -> None:
+    async def before_call(
+        self, tool_name: str, arguments: dict[str, Any], context: RequestContext
+    ) -> None:
         return None
 
     async def after_call(self, tool_name: str, result: Any, context: RequestContext) -> Any:
@@ -72,7 +87,9 @@ class PolicyEngine:
 
 
 class ScopedPolicyEngine(PolicyEngine):
-    def __init__(self, required_scopes: dict[str, set[str]], config: RobynMCPConfig | None = None) -> None:
+    def __init__(
+        self, required_scopes: dict[str, set[str]], config: RobynMCPConfig | None = None
+    ) -> None:
         super().__init__(config=config)
         self.required_scopes = required_scopes
 

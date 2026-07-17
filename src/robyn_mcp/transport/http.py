@@ -18,7 +18,9 @@ from robyn_mcp.transport.protocol import (
 
 
 class MCPTransportError(Exception):
-    def __init__(self, message: str, *, status_code: int = 400, code: int = INVALID_REQUEST) -> None:
+    def __init__(
+        self, message: str, *, status_code: int = 400, code: int = INVALID_REQUEST
+    ) -> None:
         super().__init__(message)
         self.message = message
         self.status_code = status_code
@@ -43,7 +45,13 @@ class SessionStore:
         self.ttl_seconds = ttl_seconds
         self._items: dict[str, MCPSession] = {}
 
-    def create(self, *, protocol_version: str, client_info: dict[str, Any], client_capabilities: dict[str, Any]) -> MCPSession:
+    def create(
+        self,
+        *,
+        protocol_version: str,
+        client_info: dict[str, Any],
+        client_capabilities: dict[str, Any],
+    ) -> MCPSession:
         session = MCPSession(
             session_id=secrets.token_urlsafe(24),
             protocol_version=protocol_version,
@@ -165,7 +173,11 @@ class HTTPContextAdapter:
         if not self.config.require_accept_header:
             return
         accept = headers.get("accept", "")
-        if "application/json" not in accept and "text/event-stream" not in accept and "*/*" not in accept:
+        if (
+            "application/json" not in accept
+            and "text/event-stream" not in accept
+            and "*/*" not in accept
+        ):
             raise MCPTransportError(
                 "Accept header must include application/json or text/event-stream",
                 status_code=406,
@@ -175,7 +187,7 @@ class HTTPContextAdapter:
         version = headers.get("mcp-protocol-version")
         if not version:
             return self.config.protocol_version
-        if version not in {"2025-03-26", "2025-06-18", self.config.protocol_version}:
+        if version not in set(self.config.supported_protocol_versions):
             raise MCPTransportError("Unsupported MCP protocol version", status_code=400)
         return version
 
@@ -209,13 +221,17 @@ class MCPDispatcher:
         params = payload.get("params") or {}
 
         if payload.get("jsonrpc") != "2.0" or not isinstance(method, str):
-            return 400, {"content-type": "application/json"}, jsonrpc_error(
-                request_id, INVALID_REQUEST, "Invalid JSON-RPC request"
+            return (
+                400,
+                {"content-type": "application/json"},
+                jsonrpc_error(request_id, INVALID_REQUEST, "Invalid JSON-RPC request"),
             )
 
         if method == "tools/list":
-            return 200, {"content-type": "application/json"}, jsonrpc_result(
-                request_id, self.build_tools_list_result()
+            return (
+                200,
+                {"content-type": "application/json"},
+                jsonrpc_result(request_id, self.build_tools_list_result()),
             )
 
         if method == "tools/call":
@@ -223,12 +239,20 @@ class MCPDispatcher:
             arguments = params.get("arguments") or {}
 
             if not isinstance(name, str):
-                return 400, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id, INVALID_PARAMS, "tools/call requires a string 'name'"
+                return (
+                    400,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id, INVALID_PARAMS, "tools/call requires a string 'name'"
+                    ),
                 )
             if not isinstance(arguments, dict):
-                return 400, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id, INVALID_PARAMS, "tools/call requires object 'arguments'"
+                return (
+                    400,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id, INVALID_PARAMS, "tools/call requires object 'arguments'"
+                    ),
                 )
 
             import asyncio
@@ -236,7 +260,8 @@ class MCPDispatcher:
             context = self.server.build_request_context(
                 request=None,
                 session_id=headers.get("mcp-session-id"),
-                protocol_version=headers.get("mcp-protocol-version") or self.config.protocol_version,
+                protocol_version=headers.get("mcp-protocol-version")
+                or self.config.protocol_version,
             )
 
             try:
@@ -244,25 +269,39 @@ class MCPDispatcher:
                     self.server.call_tool(name=name, arguments=arguments, context=context)
                 )
             except KeyError:
-                return 404, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id, METHOD_NOT_FOUND, f"Unknown tool: {name}"
+                return (
+                    404,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(request_id, METHOD_NOT_FOUND, f"Unknown tool: {name}"),
                 )
             except PermissionError as exc:
-                return 403, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id, INVALID_PARAMS, str(exc)
+                return (
+                    403,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(request_id, INVALID_PARAMS, str(exc)),
                 )
             except Exception as exc:
-                return 500, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id, INTERNAL_ERROR, str(exc)
+                return (
+                    500,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(request_id, INTERNAL_ERROR, str(exc)),
                 )
 
-            content = result if isinstance(result, list) else [{"type": "text", "text": self.server.serialize_tool_result(result)}]
-            return 200, {"content-type": "application/json"}, jsonrpc_result(
-                request_id, {"content": content}
+            content = (
+                result
+                if isinstance(result, list)
+                else [{"type": "text", "text": self.server.serialize_tool_result(result)}]
+            )
+            return (
+                200,
+                {"content-type": "application/json"},
+                jsonrpc_result(request_id, {"content": content}),
             )
 
-        return 404, {"content-type": "application/json"}, jsonrpc_error(
-            request_id, METHOD_NOT_FOUND, f"Unknown method: {method}"
+        return (
+            404,
+            {"content-type": "application/json"},
+            jsonrpc_error(request_id, METHOD_NOT_FOUND, f"Unknown method: {method}"),
         )
 
     def metadata_document(self) -> dict[str, Any]:
@@ -332,7 +371,10 @@ class MCPDispatcher:
             payload.setdefault("annotations", {})["readOnlyHint"] = True
         if getattr(tool.metadata, "response_schema", None):
             payload["outputSchema"] = tool.metadata.response_schema
-        if getattr(tool.metadata, "examples", None) and self.config.publish_examples_in_tool_description:
+        if (
+            getattr(tool.metadata, "examples", None)
+            and self.config.publish_examples_in_tool_description
+        ):
             payload["examples"] = tool.metadata.examples[:3]
         return payload
 
@@ -380,7 +422,9 @@ class MCPDispatcher:
         self.adapter.validate_origin(headers)
         accept = headers.get("accept", "application/json")
         if "text/event-stream" in accept and not self.config.enable_legacy_sse:
-            raise MCPTransportError("SSE is disabled; use HTTP POST/GET JSON transport", status_code=406)
+            raise MCPTransportError(
+                "SSE is disabled; use HTTP POST/GET JSON transport", status_code=406
+            )
 
         payload = self.metadata_document()
         return 200, {"content-type": "application/json"}, payload
@@ -399,8 +443,10 @@ class MCPDispatcher:
         method = payload.get("method")
         params = payload.get("params") or {}
         if payload.get("jsonrpc") != "2.0" or not isinstance(method, str):
-            return 400, {"content-type": "application/json"}, jsonrpc_error(
-                request_id, INVALID_REQUEST, "Invalid JSON-RPC request"
+            return (
+                400,
+                {"content-type": "application/json"},
+                jsonrpc_error(request_id, INVALID_REQUEST, "Invalid JSON-RPC request"),
             )
 
         if method == "initialize":
@@ -429,7 +475,11 @@ class MCPDispatcher:
             return 200, {"content-type": "application/json"}, jsonrpc_result(request_id, {})
 
         if method == "robyn_mcp/compatibility":
-            return 200, {"content-type": "application/json"}, jsonrpc_result(request_id, self.server.compatibility_report())
+            return (
+                200,
+                {"content-type": "application/json"},
+                jsonrpc_result(request_id, self.server.compatibility_report()),
+            )
 
         if method == "robyn_mcp/metrics":
             result_payload = {
@@ -446,9 +496,13 @@ class MCPDispatcher:
             if self.config.enable_response_cache and hasattr(self.server, "response_cache"):
                 result_payload["responseCache"] = self.server.response_cache.snapshot()
 
-            return 200, {"content-type": "application/json"}, jsonrpc_result(
-                request_id,
-                result_payload,
+            return (
+                200,
+                {"content-type": "application/json"},
+                jsonrpc_result(
+                    request_id,
+                    result_payload,
+                ),
             )
 
         if method == "tools/list":
@@ -457,22 +511,36 @@ class MCPDispatcher:
             result: dict[str, Any] = {"tools": tools}
             if next_cursor is not None:
                 result["nextCursor"] = next_cursor
-            return 200, {"content-type": "application/json", "mcp-protocol-version": header_version}, jsonrpc_result(request_id, result)
+            return (
+                200,
+                {"content-type": "application/json", "mcp-protocol-version": header_version},
+                jsonrpc_result(request_id, result),
+            )
 
         if method == "resources/list":
-            resources = [self._serialize_resource(resource) for resource in self.server.list_resources()]
-            return 200, {"content-type": "application/json", "mcp-protocol-version": header_version}, jsonrpc_result(
-                request_id,
-                {"resources": resources},
+            resources = [
+                self._serialize_resource(resource) for resource in self.server.list_resources()
+            ]
+            return (
+                200,
+                {"content-type": "application/json", "mcp-protocol-version": header_version},
+                jsonrpc_result(
+                    request_id,
+                    {"resources": resources},
+                ),
             )
 
         if method == "resources/read":
             uri = params.get("uri")
             if not isinstance(uri, str):
-                return 400, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    INVALID_PARAMS,
-                    "resources/read requires a string 'uri'",
+                return (
+                    400,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        INVALID_PARAMS,
+                        "resources/read requires a string 'uri'",
+                    ),
                 )
             context = self.server.build_request_context(
                 request=request,
@@ -482,49 +550,73 @@ class MCPDispatcher:
             try:
                 result = await self.server.read_resource(uri=uri, context=context)
             except KeyError:
-                return 404, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    METHOD_NOT_FOUND,
-                    f"Unknown resource: {uri}",
+                return (
+                    404,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        METHOD_NOT_FOUND,
+                        f"Unknown resource: {uri}",
+                    ),
                 )
             except PermissionError as exc:
-                return 403, {"content-type": "application/json"}, jsonrpc_error(request_id, INVALID_PARAMS, str(exc))
+                return (
+                    403,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(request_id, INVALID_PARAMS, str(exc)),
+                )
             text_value = self.server.serialize_tool_result(result)
             resource = self.server._resource_map[uri]
-            return 200, {"content-type": "application/json", "mcp-protocol-version": header_version}, jsonrpc_result(
-                request_id,
-                {
-                    "contents": [
-                        {
-                            "uri": uri,
-                            "mimeType": resource.mime_type,
-                            "text": text_value,
-                        }
-                    ]
-                },
+            return (
+                200,
+                {"content-type": "application/json", "mcp-protocol-version": header_version},
+                jsonrpc_result(
+                    request_id,
+                    {
+                        "contents": [
+                            {
+                                "uri": uri,
+                                "mimeType": resource.mime_type,
+                                "text": text_value,
+                            }
+                        ]
+                    },
+                ),
             )
 
         if method == "prompts/list":
             prompts = [self._serialize_prompt(prompt) for prompt in self.server.list_prompts()]
-            return 200, {"content-type": "application/json", "mcp-protocol-version": header_version}, jsonrpc_result(
-                request_id,
-                {"prompts": prompts},
+            return (
+                200,
+                {"content-type": "application/json", "mcp-protocol-version": header_version},
+                jsonrpc_result(
+                    request_id,
+                    {"prompts": prompts},
+                ),
             )
 
         if method == "prompts/get":
             name = params.get("name")
             arguments = params.get("arguments") or {}
             if not isinstance(name, str):
-                return 400, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    INVALID_PARAMS,
-                    "prompts/get requires a string 'name'",
+                return (
+                    400,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        INVALID_PARAMS,
+                        "prompts/get requires a string 'name'",
+                    ),
                 )
             if not isinstance(arguments, dict):
-                return 400, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    INVALID_PARAMS,
-                    "prompts/get requires object 'arguments'",
+                return (
+                    400,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        INVALID_PARAMS,
+                        "prompts/get requires object 'arguments'",
+                    ),
                 )
             context = self.server.build_request_context(
                 request=request,
@@ -532,15 +624,25 @@ class MCPDispatcher:
                 protocol_version=header_version,
             )
             try:
-                prompt_result = await self.server.get_prompt(name=name, arguments=arguments, context=context)
+                prompt_result = await self.server.get_prompt(
+                    name=name, arguments=arguments, context=context
+                )
             except KeyError:
-                return 404, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    METHOD_NOT_FOUND,
-                    f"Unknown prompt: {name}",
+                return (
+                    404,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        METHOD_NOT_FOUND,
+                        f"Unknown prompt: {name}",
+                    ),
                 )
             except PermissionError as exc:
-                return 403, {"content-type": "application/json"}, jsonrpc_error(request_id, INVALID_PARAMS, str(exc))
+                return (
+                    403,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(request_id, INVALID_PARAMS, str(exc)),
+                )
             if isinstance(prompt_result, dict) and "messages" in prompt_result:
                 result_payload = prompt_result
             else:
@@ -548,29 +650,46 @@ class MCPDispatcher:
                     "messages": [
                         {
                             "role": "user",
-                            "content": [{"type": "text", "text": self.server.serialize_tool_result(prompt_result)}],
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": self.server.serialize_tool_result(prompt_result),
+                                }
+                            ],
                         }
                     ]
                 }
-            return 200, {"content-type": "application/json", "mcp-protocol-version": header_version}, jsonrpc_result(
-                request_id,
-                result_payload,
+            return (
+                200,
+                {"content-type": "application/json", "mcp-protocol-version": header_version},
+                jsonrpc_result(
+                    request_id,
+                    result_payload,
+                ),
             )
 
         if method == "tools/call":
             name = params.get("name")
             arguments = params.get("arguments") or {}
             if not isinstance(name, str):
-                return 400, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    INVALID_PARAMS,
-                    "tools/call requires a string 'name'",
+                return (
+                    400,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        INVALID_PARAMS,
+                        "tools/call requires a string 'name'",
+                    ),
                 )
             if not isinstance(arguments, dict):
-                return 400, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    INVALID_PARAMS,
-                    "tools/call requires object 'arguments'",
+                return (
+                    400,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        INVALID_PARAMS,
+                        "tools/call requires object 'arguments'",
+                    ),
                 )
             context = self.server.build_request_context(
                 request=request,
@@ -578,32 +697,58 @@ class MCPDispatcher:
                 protocol_version=header_version,
             )
             try:
-                result = await self.server.call_tool(name=name, arguments=arguments, context=context)
+                result = await self.server.call_tool(
+                    name=name, arguments=arguments, context=context
+                )
             except KeyError:
-                return 404, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    METHOD_NOT_FOUND,
-                    f"Unknown tool: {name}",
+                return (
+                    404,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        METHOD_NOT_FOUND,
+                        f"Unknown tool: {name}",
+                    ),
                 )
             except PermissionError as exc:
-                return 403, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    INVALID_PARAMS,
-                    str(exc),
+                return (
+                    403,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        INVALID_PARAMS,
+                        str(exc),
+                    ),
                 )
             except Exception as exc:  # pragma: no cover - final fallback
-                return 500, {"content-type": "application/json"}, jsonrpc_error(
-                    request_id,
-                    INTERNAL_ERROR,
-                    str(exc),
+                return (
+                    500,
+                    {"content-type": "application/json"},
+                    jsonrpc_error(
+                        request_id,
+                        INTERNAL_ERROR,
+                        str(exc),
+                    ),
                 )
-            content = result if isinstance(result, list) else [{"type": "text", "text": self.server.serialize_tool_result(result)}]
-            return 200, {"content-type": "application/json", "mcp-protocol-version": header_version}, jsonrpc_result(
-                request_id,
-                {"content": content},
+            content = (
+                result
+                if isinstance(result, list)
+                else [{"type": "text", "text": self.server.serialize_tool_result(result)}]
+            )
+            return (
+                200,
+                {"content-type": "application/json", "mcp-protocol-version": header_version},
+                jsonrpc_result(
+                    request_id,
+                    {"content": content},
+                ),
             )
 
-        return 404, {"content-type": "application/json"}, jsonrpc_error(request_id, METHOD_NOT_FOUND, f"Unknown method: {method}")
+        return (
+            404,
+            {"content-type": "application/json"},
+            jsonrpc_error(request_id, METHOD_NOT_FOUND, f"Unknown method: {method}"),
+        )
 
     async def handle_delete(self, request: Any) -> tuple[int, dict[str, str], dict[str, Any]]:
         headers = self.adapter.extract_headers(request)
@@ -611,12 +756,23 @@ class MCPDispatcher:
         session_id = headers.get("mcp-session-id")
         removed = self.sessions.delete(session_id)
         if not removed:
-            return 404, {"content-type": "application/json"}, {"ok": False, "message": "Session not found"}
+            return (
+                404,
+                {"content-type": "application/json"},
+                {"ok": False, "message": "Session not found"},
+            )
         return 200, {"content-type": "application/json"}, {"ok": True}
 
     async def handle_options(self, request: Any) -> tuple[int, dict[str, str], dict[str, Any]]:
-        return 204, {
-            "allow": "GET, POST, DELETE, OPTIONS",
-            "access-control-allow-methods": "GET, POST, DELETE, OPTIONS",
-            "access-control-allow-headers": "content-type, accept, mcp-session-id, mcp-protocol-version, authorization",
-        }, {}
+        return (
+            204,
+            {
+                "allow": "GET, POST, DELETE, OPTIONS",
+                "access-control-allow-methods": "GET, POST, DELETE, OPTIONS",
+                "access-control-allow-headers": (
+                    "content-type, accept, mcp-session-id, mcp-protocol-version, "
+                    "authorization"
+                ),
+            },
+            {},
+        )

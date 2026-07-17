@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.2
+
+### Added
+- Framework-neutral `Operation` model, invocation result, policy decision, and adapter protocol interfaces.
+- Framework-neutral OpenAPI operation source with local `$ref` resolution, schema extraction, risk classification, least-privilege recommendations, and contract scoring.
+- Operation risk classification for read-only, mutation, data deletion, financial, credential, admin, sensitive-data, and external-communication tools.
+- Tool contract scoring surfaced in tool annotations and operation readiness reports.
+- New `robyn-mcp doctor` command for repeatable endpoint health and conformance-oriented checks.
+- New `robyn-mcp inspect-openapi` command for evaluating OpenAPI specs before exposing them to agents.
+- New `robyn-mcp invoke-openapi` command for invoking one OpenAPI operation against an upstream service.
+- New `robyn-mcp benchmark-openapi` command for timing OpenAPI inspection and contract scoring.
+- FastAPI operation source that consumes `app.openapi()` without requiring a hard FastAPI dependency.
+- Governance, maintainer, support, and next PyPI release documentation.
+- GitHub Actions CI, issue templates, PR template, Dependabot configuration, and a richer customer-support demo app.
+- Contributor guide and static terminal demo preview asset.
+
+### Changed
+- Reframed README and GitHub Pages positioning around governed API-to-MCP infrastructure with Robyn as the reference adapter.
+- Bumped project version from `1.0.1` to `1.0.2`.
+- Expanded runtime compatibility reporting with protocol checks and client matrix statuses.
+- Expanded `robyn-mcp doctor` with unknown-method, unsupported-protocol, session-deletion, and protocol-coverage checks.
+- Hardened OpenAPI gateway behavior for HTTP errors, network errors, missing path arguments, body/path field collisions, and explicit header forwarding.
+- Updated package metadata keywords and documentation URL.
+
 ## 1.0.1
 
 ### Added

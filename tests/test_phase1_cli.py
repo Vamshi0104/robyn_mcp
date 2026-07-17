@@ -5,8 +5,6 @@ import json
 from types import SimpleNamespace
 from urllib.error import HTTPError
 
-import pytest
-
 from robyn_mcp.cli import main
 from robyn_mcp.testing.endpoint_validator import EndpointValidator
 
@@ -34,11 +32,23 @@ def test_endpoint_validator_happy_path(monkeypatch):
         calls.append((req.get_method(), req.full_url, dict(req.header_items()), req.data))
         method = req.get_method()
         if method == "GET":
-            return _MockResponse(200, {}, {"name": "demo", "protocolVersion": "2025-11-25", "capabilities": {"tools": {}}})
+            return _MockResponse(
+                200,
+                {},
+                {"name": "demo", "protocolVersion": "2025-11-25", "capabilities": {"tools": {}}},
+            )
         body = json.loads(req.data.decode("utf-8"))
         if body["method"] == "initialize":
-            return _MockResponse(200, {"mcp-session-id": "abc", "mcp-protocol-version": "2025-11-25"}, {"jsonrpc": "2.0", "id": 1, "result": {}})
-        return _MockResponse(200, {}, {"jsonrpc": "2.0", "id": 2, "result": {"tools": [{"name": "ping"}, {"name": "echo"}]}})
+            return _MockResponse(
+                200,
+                {"mcp-session-id": "abc", "mcp-protocol-version": "2025-11-25"},
+                {"jsonrpc": "2.0", "id": 1, "result": {}},
+            )
+        return _MockResponse(
+            200,
+            {},
+            {"jsonrpc": "2.0", "id": 2, "result": {"tools": [{"name": "ping"}, {"name": "echo"}]}},
+        )
 
     monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
     report = EndpointValidator("http://localhost:8000/mcp").validate()
@@ -69,7 +79,9 @@ def test_cli_runtime_json(capsys):
 def test_cli_validate_endpoint(monkeypatch, capsys):
     monkeypatch.setattr(
         "robyn_mcp.cli.EndpointValidator",
-        lambda endpoint, timeout=5.0: SimpleNamespace(validate=lambda: SimpleNamespace(as_dict=lambda: {"endpoint": endpoint, "ok": True})),
+        lambda endpoint, timeout=5.0: SimpleNamespace(
+            validate=lambda: SimpleNamespace(as_dict=lambda: {"endpoint": endpoint, "ok": True})
+        ),
     )
     exit_code = main(["validate-endpoint", "http://localhost:8000/mcp", "--json"])
     assert exit_code == 0
