@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Removed relative README demo images so PyPI and TestPyPI render without broken media.
 - Added the Robyn test dependency to the development extra so clean CI runners install everything needed by the test suite.
+- Added a Python 3.10 TOML parser fallback for release audit imports.
 - Updated release badges and package metadata for the patch release.
 
 ## 1.0.2

@@ -4,7 +4,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.10
+    import tomli as tomllib
 
 REQUIRED_DOCS = {
     "readme": "README.md",
