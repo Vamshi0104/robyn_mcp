@@ -26,4 +26,4 @@ __all__ = [
     "expose_prompt",
 ]
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"

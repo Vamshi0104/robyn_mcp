@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.4
+
+### Fixed
+- Added Python 3.10-compatible TOML parsing for release audit imports.
+- Kept static site export aligned with tracked release assets.
+- Included clean-runner test dependencies for the GitHub Actions matrix.
+
 ## 1.0.3
 
 ### Fixed

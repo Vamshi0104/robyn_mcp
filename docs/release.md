@@ -4,7 +4,7 @@ This page consolidates the release, verification, demo, and launch checklist for
 
 ## Version
 
-The prepared release version is `1.0.3`.
+The prepared release version is `1.0.4`.
 
 Before publishing:
 
@@ -41,7 +41,7 @@ Use a fresh environment after upload:
 ```bash
 python -m venv /tmp/robyn-mcp-release-check
 /tmp/robyn-mcp-release-check/bin/python -m pip install --upgrade pip
-/tmp/robyn-mcp-release-check/bin/python -m pip install robyn robyn-mcp==1.0.3
+/tmp/robyn-mcp-release-check/bin/python -m pip install robyn robyn-mcp==1.0.4
 /tmp/robyn-mcp-release-check/bin/robyn-mcp runtime --json
 ```
 
@@ -50,7 +50,7 @@ python -m venv /tmp/robyn-mcp-release-check
 Suggested title:
 
 ```text
-robyn-mcp 1.0.3
+robyn-mcp 1.0.4
 ```
 
 Suggested highlights:
@@ -65,8 +65,8 @@ Suggested highlights:
 Tag:
 
 ```bash
-git tag v1.0.3
-git push origin v1.0.3
+git tag v1.0.4
+git push origin v1.0.4
 ```
 
 ## Demo Recording
@@ -108,7 +108,7 @@ Minimum smoke scenario:
 
 After PyPI and GitHub releases are live:
 
-- Confirm `pip install robyn-mcp==1.0.3` works in a clean environment.
+- Confirm `pip install robyn-mcp==1.0.4` works in a clean environment.
 - Confirm docs are live at `https://vamshi0104.github.io/robyn_mcp/`.
 - Attach or link the demo GIF/video.
 - Share one concise technical post with real commands.
