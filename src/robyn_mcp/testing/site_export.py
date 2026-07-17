@@ -11,8 +11,7 @@ DEFAULT_SITE_FILES = [
     "assets/favicon/favicon-32x32.png",
     "assets/favicon/favicon-16x16.png",
     "assets/favicon/apple-touch-icon.png",
-    "docs/assets/launch_hero.svg",
-    "docs/assets/benchmark_table.svg",
+    "docs/assets/demo_terminal.svg",
 ]
 
 

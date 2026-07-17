@@ -55,6 +55,7 @@ def test_export_site_function(tmp_path):
     payload = export_static_site(root, tmp_path / "site")
     assert Path(payload["entrypoint"]).exists()
     assert "index.html" in payload["files"]
+    assert "docs/assets/demo_terminal.svg" in payload["files"]
 
 
 def test_release_audit_reflects_phase16_assets():
