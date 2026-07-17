@@ -18,7 +18,7 @@ body:
     id: version
     attributes:
       label: robyn-mcp version
-      placeholder: "1.0.2"
+      placeholder: "1.0.3"
     validations:
       required: true
   - type: textarea
@@ -45,4 +45,3 @@ body:
     attributes:
       label: Logs or traceback
       render: text
-

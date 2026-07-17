@@ -10,7 +10,7 @@ class RobynMCPConfig(BaseModel):
     name: str = "robyn-mcp"
     server_name: str = "robyn-mcp"
     description: str = "Robyn MCP server"
-    version: str = "1.0.2"
+    version: str = "1.0.3"
 
     # Protocol
     protocol_version: str = "2025-11-25"

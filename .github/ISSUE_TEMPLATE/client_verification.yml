@@ -27,7 +27,7 @@ body:
     id: package_version
     attributes:
       label: robyn-mcp version
-      placeholder: "1.0.2"
+      placeholder: "1.0.3"
     validations:
       required: true
   - type: dropdown
@@ -53,4 +53,3 @@ body:
       label: Doctor output
       description: Paste `robyn-mcp doctor <endpoint> --json` if available.
       render: json
-

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robyn-mcp"
-version = "1.0.2"
+version = "1.0.3"
 description = "Turn Robyn endpoints into governed MCP tools, resources, and prompts with risk metadata, auth-aware HTTP transport, and production-friendly packaging."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -32,6 +32,7 @@ dev = [
   "build>=1.2",
   "robyn>=0.79",
   "pytest>=8.0",
+  "pytest-asyncio>=0.24",
   "ruff>=0.6",
   "twine>=6.0",
   "nox>=2025.5.1",
