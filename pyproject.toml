@@ -34,7 +34,7 @@ dev = [
   "ruff>=0.6",
   "twine>=6.0",
   "nox>=2025.5.1",
-  "httpx>=0.27",
+  "httpx>=0.28.1",
 ]
 docs = [
   "mkdocs-material>=9.7.0",
