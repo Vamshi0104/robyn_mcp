@@ -6,15 +6,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Vamshi0104/robyn_mcp/actions/workflows/ci.yml"><img src="https://github.com/Vamshi0104/robyn_mcp/actions/workflows/ci.yml/badge.svg" /></a>
-  <a href="https://pypi.org/project/robyn-mcp/"><img src="https://img.shields.io/pypi/v/robyn-mcp.svg" /></a>
+  <a href="https://github.com/Vamshi0104/robyn_mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Vamshi0104/robyn_mcp/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
+  <a href="https://pypi.org/project/robyn-mcp/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-v1.0.2-blue" /></a>
   <a href="https://pypi.org/project/robyn-mcp/"><img src="https://img.shields.io/pypi/dm/robyn-mcp.svg" /></a>
-  <a href="https://github.com/Vamshi0104/robyn_mcp/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Vamshi0104/robyn_mcp" /></a>
+  <a href="https://github.com/Vamshi0104/robyn_mcp/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue" /></a>
   <a href="https://vamshi0104.github.io/robyn_mcp/"><img src="https://img.shields.io/badge/docs-live-blue" /></a>
-</p>
-
-<p align="center">
-  <img src="docs/assets/demo_terminal.svg" alt="robyn-mcp terminal demo" />
 </p>
 
 ---
@@ -37,8 +33,8 @@ You should not need to duplicate handlers, rewrite schemas, or rebuild authentic
 
 ## 15-second demo
 
-<!-- DEMO_GIF_START: after recording, replace demo_terminal.svg with robyn_mcp_demo.gif. -->
-![robyn-mcp demo](docs/assets/demo_terminal.svg)
+<!-- DEMO_GIF_START: add docs/assets/robyn_mcp_demo.gif after recording the launch demo. -->
+Demo GIF placeholder: record the launch flow and add `docs/assets/robyn_mcp_demo.gif` here.
 <!-- DEMO_GIF_END -->
 
 ```text
