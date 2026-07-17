@@ -619,6 +619,52 @@ Robyn → OpenAPI → FastAPI</code></pre>
         </div>
     </section>
 
+    <section id="benchmarks">
+        <div class="container split">
+            <div>
+                <div class="section-head">
+                    <h2>Benchmarks you can rerun</h2>
+                    <p>Measure OpenAPI inspection, contract scoring, and release regressions with CLI commands that
+                        produce machine-readable output for CI, release notes, and comparison reports.</p>
+                </div>
+                <div class="list">
+                    <div class="list-item">
+                        <div class="check">✓</div>
+                        <div><b>OpenAPI inspection timing</b>
+                            <p>Run repeated inspections against the same contract and track min, mean, median, and max latency.</p></div>
+                    </div>
+                    <div class="list-item">
+                        <div class="check">✓</div>
+                        <div><b>Comparable reports</b>
+                            <p>Compare robyn-mcp and FastAPI MCP benchmark JSON files, then publish a markdown summary.</p></div>
+                    </div>
+                    <div class="list-item">
+                        <div class="check">✓</div>
+                        <div><b>Local and reproducible</b>
+                            <p>Benchmarks are designed for regression tracking before releases, without relying on hosted services.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-card">
+                <div class="code-window">
+                    <div class="window-top"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                    </div>
+                    <pre><code>robyn-mcp benchmark-openapi examples/openapi.json \
+  --iterations 50 --json
+
+{
+  "iterations": 50,
+  "operationCount": 6,
+  "minMs": 0.91,
+  "meanMs": 1.18,
+  "medianMs": 1.12,
+  "maxMs": 1.83
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="how">
         <div class="container split">
             <div>

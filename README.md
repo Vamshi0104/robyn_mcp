@@ -274,6 +274,8 @@ robyn-mcp doctor http://localhost:8080/mcp --json
 robyn-mcp inspect-openapi ./openapi.json --json
 robyn-mcp invoke-openapi ./openapi.json --upstream http://localhost:8000 --operation get_customer --args '{}'
 robyn-mcp benchmark-openapi ./openapi.json --iterations 25 --json
+robyn-mcp compare-benchmarks benchmarks/robyn_sample.json benchmarks/fastapi_sample.json --json
+robyn-mcp publish-benchmarks benchmarks/robyn_sample.json benchmarks/fastapi_sample.json --out benchmark_report.md
 robyn-mcp release-audit --json
 robyn-mcp release-bundle --json
 ```
