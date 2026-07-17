@@ -29,7 +29,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "build>=1.2",
+  "build>=1.5.0",
   "robyn>=0.79",
   "pytest>=8.0",
   "ruff>=0.6",
