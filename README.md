@@ -31,7 +31,7 @@ You should not need to duplicate handlers, rewrite schemas, or rebuild authentic
 
 ---
 
-## 15-second demo
+## Demo Preview
 
 <!-- DEMO_GIF_START -->
 ![robyn-mcp demo](https://raw.githubusercontent.com/Vamshi0104/robyn_mcp/main/docs/assets/robyn_mcp_demo.gif)
