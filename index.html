@@ -277,8 +277,10 @@
           width: 28px; height: 28px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0;
           background: rgba(44,242,178,0.14); color: var(--accent); font-weight: 900;
         }
-        .code-block {
+        .code-block,
+        .install-box {
           position: relative;
+          min-width: 0;
         }
 
         .copy-btn {
@@ -297,6 +299,7 @@
 
           box-shadow: 0 8px 20px rgba(124,92,255,0.4);
           transition: 0.2s ease;
+          z-index: 3;
         }
 
         .copy-btn:hover {
@@ -325,6 +328,10 @@
         .price-card h3 { margin: 0 0 10px; font-size: 28px; }
         .price-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.7; }
         .install-box { margin-top: 18px; }
+        .install-box pre,
+        .code-block pre {
+          padding-top: 52px;
+        }
 
         .faq { display: grid; gap: 14px; }
         .faq-item { padding: 20px 22px; }
@@ -818,8 +825,9 @@ robyn-mcp doctor http://localhost:8080/mcp --json</code></pre>
             <div class="price-card" id="quickstart">
                 <div class="price-badge">Quickstart</div>
                 <h3>Minimal setup</h3>
-                <button class="copy-btn" onclick="copyCodeSetup(this)">Copy</button>
-                <pre><code id="copyCodeSetup">from robyn import Robyn
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCodeSetup(this)">Copy</button>
+                    <pre><code id="copyCodeSetup">from robyn import Robyn
 from robyn_mcp import RobynMCP, RobynMCPConfig
 
 app = Robyn(__file__)
@@ -831,6 +839,7 @@ async def health():
 mcp = RobynMCP(app, config=RobynMCPConfig(require_session=False))
 mcp.mount_http()
 app.start(port=8080)</code></pre>
+                </div>
             </div>
         </div>
     </section>
