@@ -76,6 +76,8 @@ docs/*
 !docs/assets/
 docs/assets/*
 !docs/assets/demo_terminal.svg
+!docs/assets/robyn_mcp_demo.gif
+!docs/assets/robyn_mcp_demo.mov
 !docs/index.md
 !docs/quickstart.md
 !docs/examples.md

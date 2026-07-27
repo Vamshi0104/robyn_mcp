@@ -33,8 +33,8 @@ You should not need to duplicate handlers, rewrite schemas, or rebuild authentic
 
 ## 15-second demo
 
-<!-- DEMO_GIF_START: add docs/assets/robyn_mcp_demo.gif after recording the launch demo. -->
-Demo GIF placeholder: record the launch flow and add `docs/assets/robyn_mcp_demo.gif` here.
+<!-- DEMO_GIF_START -->
+![robyn-mcp demo](https://raw.githubusercontent.com/Vamshi0104/robyn_mcp/main/docs/assets/robyn_mcp_demo.gif)
 <!-- DEMO_GIF_END -->
 
 ```text
