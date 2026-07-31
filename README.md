@@ -8,9 +8,10 @@
 <p align="center">
   <a href="https://github.com/Vamshi0104/robyn_mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Vamshi0104/robyn_mcp/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="https://pypi.org/project/robyn-mcp/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-v1.0.4-blue" /></a>
-  <a href="https://pypi.org/project/robyn-mcp/"><img src="https://img.shields.io/pypi/dm/robyn-mcp.svg" /></a>
+  <!-- <a href="https://pypi.org/project/robyn-mcp/"><img src="https://img.shields.io/pypi/dm/robyn-mcp.svg" alt="PyPI Monthly Downloads" /></a> -->
+  <a href="https://pepy.tech/projects/robyn-mcp"><img src="https://static.pepy.tech/personalized-badge/robyn-mcp?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads" alt="Total Downloads" /></a>
   <a href="https://github.com/Vamshi0104/robyn_mcp/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue" /></a>
-  <a href="https://vamshi0104.github.io/robyn_mcp/"><img src="https://img.shields.io/badge/docs-live-blue" /></a>
+  <a href="https://vamshi0104.github.io/robyn_mcp/"><img src="https://img.shields.io/badge/docs-live-blue" alt="Documentation" /></a>
 </p>
 
 ---
